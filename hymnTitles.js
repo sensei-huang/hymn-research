@@ -17,6 +17,6 @@ async function getHymnTitle(num) {
     console.error(error.message);
   }
 }
-for(var i = 1; i < 1348; i++){
+for(var i = 1; i < 1349; i++){
     getHymnTitle(i);
 }
