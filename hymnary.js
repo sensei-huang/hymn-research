@@ -28,7 +28,9 @@ for(var i = 1; i < 1349; i++){
 }
 var i = 1;
 function next(){
-  console.log(encodeURI(hymnInstances[i]));
+  window.open(encodeURI(hymnInstances[i]), '_blank').focus();
+  console.log(i);
+  console.log(hymnInstances[i]);
   i++;
 }
 next();
