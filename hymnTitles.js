@@ -1,9 +1,10 @@
-var hymns = [];
+var hymns = {};
 async function getHymnTitle(num) {
   const url = "https://songbase.life/english_hymnal/"+num;
   try {
     const response = await fetch(url);
     if (!response.ok) {
+      hymns[num] = "Not found";
       throw new Error(`Response status: ${response.status}`);
     }
     const rtext = await response.text();
@@ -11,7 +12,7 @@ async function getHymnTitle(num) {
     if(reg.test(rtext)){
         var txt = document.createElement("textarea");
         txt.innerHTML = rtext.match(reg)[1];
-        hymns.push(txt.value);
+        hymns[num] = txt.value;
     }
   } catch (error) {
     console.error(error.message);
