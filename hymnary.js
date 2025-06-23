@@ -26,3 +26,9 @@ async function getHymnInstance(num) {
 for(var i = 1; i < 1349; i++){
     getHymnInstance(i);
 }
+var i = 1;
+function next(){
+  console.log(encodeURI(hymnInstances[i]));
+  i++;
+}
+next();
