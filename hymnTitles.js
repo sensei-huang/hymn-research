@@ -12,7 +12,7 @@ async function getHymnTitle(num) {
     if(reg.test(rtext)){
         var txt = document.createElement("textarea");
         txt.innerHTML = rtext.match(reg)[1];
-        hymns[num] = txt.value;
+        hymns[num] = txt.value.replaceAll('"', "'");
     }
   } catch (error) {
     console.error(error.message);
