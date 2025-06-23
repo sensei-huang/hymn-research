@@ -12,7 +12,7 @@ async function getSongTitle(num) {
     if(reg.test(rtext)){
         var txt = document.createElement("textarea");
         txt.innerHTML = rtext.match(reg)[1];
-        songs[num] = txt.value;
+        songs[num] = txt.value.replaceAll('"', "'");
     }else{
 
     }
