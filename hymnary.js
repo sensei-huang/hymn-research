@@ -16,7 +16,7 @@ async function getHymnInstance(num) {
         var div = txt.value;
         if(reg2.test(div)){
             var firststanza = div.match(reg2)[1];
-            hymnInstances[num] = "hymnary.org/search?qu="+firststanza.replaceAll(/\[.*?\]/g, "").replaceAll("\\n", " ").replaceAll('\\"', "").replaceAll(':', " ").replaceAll(/\d/g, " ");
+            hymnInstances[num] = "https://hymnary.org/search?qu="+firststanza.replaceAll(/\[.*?\]/g, "").replaceAll("\\n", " ").replaceAll('\\"', "").replaceAll(':', " ").replaceAll(/\d/g, " ")+"in:instance";
         }
     }
   } catch (error) {
