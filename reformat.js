@@ -1,3 +1,20 @@
+const measure = document.createElement('div');
+measure.style = "position: absolute; visibility: hidden; height: auto; width: auto; white-space: pre-wrap;";
+document.body.append(measure);
+function calcWidth(str, chord){
+  if(chord){
+    measure.style.fontFamily = "'Arial Black', Gadget, sans-serif"; // Font type
+    measure.style.fontSize = "7pt"; // Font size
+  }else{
+    measure.style.fontFamily = "Georgia, serif"; // Font type
+    measure.style.fontSize = "10pt"; // Font size
+  }
+  measure.innerText = str;
+  width = measure.clientWidth+1;
+  measure.innerText = "";
+  return width;
+}
+
 let json = document.getElementsByClassName("application-container")[0].children[0].getAttribute("data-react-props");
 let parsed = JSON.parse(json);
 let lyrics = parsed.preloaded_song.lyrics;
@@ -22,12 +39,40 @@ for(let i = 0; i < lines.length; i++){
       chords.style.whiteSpace = "pre-wrap"; // To preserve the tab
       chords.style.fontFamily = "'Arial Black', Gadget, sans-serif"; // Font type
       chords.style.fontSize = "7pt"; // Font size
-      chords.style.color = "#FFFFFF"; // Font colour
-      
+      chords.style.color = "#000000"; // Font colour
+      let string;
+      for(let j = 0; j < lines[i].length; j++){
+        if(j == 0 && lines[i].substr(0, 2) == "  "){
+          j = 2;
+        }
+        if(lines[i][j] == "["){
+          j++;
+          let chordstring = "";
+          for(let k = j; k < lines[i].length; k++){
+            if(lines[i][k] == "]"){
+              j = k+1;
+              break;
+            }else{
+              chordstring += lines[i][k];
+            }
+          }
+          let widthNeeded = calcWidth(string, false)+calcWidth(chordstring, true)/2-calcWidth(chords.innerText, true);
+          let spaceNeeded = Math.ceil(widthNeeded/calcWidth(" ", true));
+          chords.innerText += " ".repeat(spaceNeeded)+chordstring;
+        }else{
+          string += lines[i][j];
+        }
+      }
+      if(lines[i].substr(0, 2) == "  "){
+        chords.innerText = "\t\t"+chords.innerText;
+      }else{
+        chords.innerText = "\t"+chords.innerText;
+      }
+      storage.append(chords);
     }
     words.style.fontFamily = "Georgia, serif"; // Font type
     words.style.fontSize = "10pt"; // Font size
-    words.style.color = "#FFFFFF"; // Font colour
+    words.style.color = "#000000"; // Font colour
     if(lines[i].substr(0, 2) == "  "){
       words.innerText = "\t\t"+lines[i].substring(2, lines[i].length).replaceAll(/\[.*?\]/g, "");
     }else{
@@ -36,9 +81,6 @@ for(let i = 0; i < lines.length; i++){
     storage.append(words);
   }
 }
-
-// p { font-family:Georgia, serif; font-size: 10pt;}
-// p { font-family: 'Arial Black', Gadget, sans-serif; font-size: 7pt;}
 
 var range = document.createRange();
 range.selectNode(storage);
