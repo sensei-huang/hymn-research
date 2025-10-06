@@ -20,8 +20,16 @@ function calcWidth(str, chord){ // Calculate width of text
 
 let json = document.getElementsByClassName("application-container")[0].children[0].getAttribute("data-react-props");
 let parsed = JSON.parse(json);
-let lyrics = parsed.preloaded_song.lyrics;
-let lines = lyrics.split('\n');
+if(parsed.preloaded_song.hasOwnProperty("lyrics")){ // Contains lyrics
+  let lyrics = parsed.preloaded_song.lyrics;
+  let lines = lyrics.split('\n');
+}else{ // Does not contain the lyrics
+  window.location.reload();
+  let json = document.getElementsByClassName("application-container")[0].children[0].getAttribute("data-react-props");
+  let parsed = JSON.parse(json);
+  let lyrics = parsed.preloaded_song.lyrics;
+  let lines = lyrics.split('\n');
+}
 
 const storage = document.createElement('div');
 document.body.append(storage);
@@ -30,7 +38,13 @@ for(let i = 0; i < lines.length; i++){
   const words = document.createElement('div'); // Element to store the words
   words.style.whiteSpace = "pre-wrap"; // To preserve the tab
   words.style.color = defaultColor; // Font colour
-  
+  words.innerText = "";
+
+  let stanzaNumberRegex = /^([0-9]+)$/gm;
+  if(stanzaNumberRegex.test(lines[i])){
+    words.innerText = lines[i]+"\n";
+    i++;
+  }
   if(lines[i][0] == "#"){ // Comment
     const comment = document.createElement(commentType); // Comment type
     comment.style.font = commentFont; // Font
@@ -76,9 +90,9 @@ for(let i = 0; i < lines.length; i++){
     }
     words.style.font = textFont; // Font
     if(lines[i].substr(0, 2) == "  "){ // Chorus
-      words.innerText = "\t\t"+lines[i].substring(2, lines[i].length).replaceAll(/\[.*?\]/g, ""); // Remove chords and double space at start
+      words.innerText += "\t\t"+lines[i].substring(2, lines[i].length).replaceAll(/\[.*?\]/g, ""); // Remove chords and double space at start
     }else{
-      words.innerText = "\t"+lines[i].replaceAll(/\[.*?\]/g, ""); // Remove chords
+      words.innerText += "\t"+lines[i].replaceAll(/\[.*?\]/g, ""); // Remove chords
     }
     storage.append(words);
   }
