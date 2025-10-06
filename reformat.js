@@ -23,7 +23,7 @@ let parsed = JSON.parse(json);
 let lyrics, lines;
 if(parsed.preloaded_song != null){ // Contains lyrics
   lyrics = parsed.preloaded_song.lyrics;
-  lines = lyrics.split('\n');
+  lines = lyrics.split("\n");
 }else{ // Does not contain the lyrics
   window.location.reload();
 }
