@@ -7,14 +7,21 @@ const storage = document.createElement('div');
 document.body.append(storage);
 
 for(let i = 0; i < lines.length; i++){
+  const words = document.createElement('div'); // Element to store the words
   if(lines[i][0] == "#"){
-    const words = document.createElement('div'); // Element to store the words
     words.style.fontFamily = "Georgia, serif"; // Font type
     words.style.fontSize = "10pt"; // Font size
     words.style.fontWeight = 'bold'; // Bold
     words.style.color = "#999999"; // Font colour
     words.style.whiteSpace = "pre-wrap"; // To preserve the tab
     words.innerText = "\t"+lines[i].substring(1, lines[i].length);
+    storage.append(words);
+  }else if(lines[i].substr(0, 2) == "  "){
+    words.style.fontFamily = "Georgia, serif"; // Font type
+    words.style.fontSize = "10pt"; // Font size
+    words.style.color = "#FFFFFF"; // Font colour
+    words.style.whiteSpace = "pre-wrap"; // To preserve the tab
+    words.innerText = "\t\t"+lines[i].substring(2, lines[i].length);
     storage.append(words);
   }
 }
