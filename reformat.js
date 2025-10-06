@@ -16,7 +16,11 @@ for(let i = 0; i < lines.length; i++){
     words.style.whiteSpace = "pre-wrap"; // To preserve the tab
     words.innerText = "\t"+lines[i].substring(1, lines[i].length);
     storage.append(words);
-  }else if(lines[i].substr(0, 2) == "  "){
+  }else{
+    // if(lines[i].substr(0, 2) == "  "){
+    if(lines[i].includes("[")){
+      
+    }
     words.style.fontFamily = "Georgia, serif"; // Font type
     words.style.fontSize = "10pt"; // Font size
     words.style.color = "#FFFFFF"; // Font colour
