@@ -18,15 +18,8 @@ function calcWidth(str, chord){ // Calculate width of text
   return context.measureText(str).width;
 }
 
-let json = document.getElementsByClassName("application-container")[0].children[0].getAttribute("data-react-props");
-let parsed = JSON.parse(json);
-let lyrics, lines;
-if(parsed.preloaded_song != null){ // Contains lyrics
-  lyrics = parsed.preloaded_song.lyrics;
-  lines = lyrics.split("\n");
-}else{ // Does not contain the lyrics
-  window.location.reload();
-}
+let lyrics = song.props.lyrics;
+let lines = lyrics.split("\n");
 
 const storage = document.createElement('div');
 document.body.append(storage);
