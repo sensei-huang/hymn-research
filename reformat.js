@@ -1,18 +1,12 @@
-const measure = document.createElement('div');
-measure.style = "position: absolute; visibility: hidden; height: auto; width: auto; white-space: pre-wrap;";
-document.body.append(measure);
+const canvas = document.createElement("canvas");
+const context = canvas.getContext("2d");
 function calcWidth(str, chord){
   if(chord){
-    measure.style.fontFamily = "'Arial Black', Gadget, sans-serif"; // Font type
-    measure.style.fontSize = "7pt"; // Font size
+    context.font = "7pt 'Arial Black', Gadget, sans-serif";
   }else{
-    measure.style.fontFamily = "Georgia, serif"; // Font type
-    measure.style.fontSize = "10pt"; // Font size
+    context.font = "10pt Georgia, serif";
   }
-  measure.innerText = str;
-  width = measure.clientWidth+1;
-  measure.innerText = "";
-  return width;
+  return context.measureText(str).width;
 }
 
 let json = document.getElementsByClassName("application-container")[0].children[0].getAttribute("data-react-props");
@@ -30,7 +24,7 @@ for(let i = 0; i < lines.length; i++){
     words.style.fontFamily = "Georgia, serif"; // Font type
     words.style.fontSize = "10pt"; // Font size
     words.style.fontWeight = 'bold'; // Bold
-    words.style.color = "#999999"; // Font colour
+    words.style.color = "#434343"; // Font colour
     words.innerText = "\t"+lines[i].substring(1, lines[i].length);
     storage.append(words);
   }else{
@@ -40,7 +34,7 @@ for(let i = 0; i < lines.length; i++){
       chords.style.fontFamily = "'Arial Black', Gadget, sans-serif"; // Font type
       chords.style.fontSize = "7pt"; // Font size
       chords.style.color = "#000000"; // Font colour
-      let string;
+      let string = "";
       for(let j = 0; j < lines[i].length; j++){
         if(j == 0 && lines[i].substr(0, 2) == "  "){
           j = 2;
@@ -50,14 +44,14 @@ for(let i = 0; i < lines.length; i++){
           let chordstring = "";
           for(let k = j; k < lines[i].length; k++){
             if(lines[i][k] == "]"){
-              j = k+1;
+              j = k;
               break;
             }else{
               chordstring += lines[i][k];
             }
           }
-          let widthNeeded = calcWidth(string, false)+calcWidth(chordstring, true)/2-calcWidth(chords.innerText, true);
-          let spaceNeeded = Math.ceil(widthNeeded/calcWidth(" ", true));
+          let widthNeeded = calcWidth(string, false)-calcWidth(chords.innerText, true);
+          let spaceNeeded = Math.round(widthNeeded/calcWidth(" ", true));
           chords.innerText += " ".repeat(spaceNeeded)+chordstring;
         }else{
           string += lines[i][j];
