@@ -1,7 +1,7 @@
 // Lyrics scraping variables
 let lyrics = song.props.lyrics;
 let lines = lyrics.split("\n");
-let chorusChords = {};
+let chorusChords = [];
 
 async function extractChords(l, lnum){ // Lines, line number, array to store chords
 		let arr = [];
