@@ -3,27 +3,33 @@ let lyrics = song.props.lyrics;
 let lines = lyrics.split("\n");
 let chorusChords = [];
 
+function extractChordLine(lnum){
+	let arr = [];
+	let cstr = ""; // Store lyrics of this line
+	let chordline = []; // Store chords of this line
+	for(let c = 0; c < lines[lnum].length; c++){ // Go through each character
+		if(lines[lnum][c] === "["){ // Detected chord
+			//console.log(cstr);
+			c++; // Skip '['
+			let chord = "";
+			while(lines[lnum][c] !== "]"){ // Store chord (assumes chord does not reach end of line)
+				chord += lines[lnum][c];
+				c++;
+			}
+			let s = syl(cstr); // Count syllables
+			//console.log(s);
+			arr.push([chord, s]);
+		}else{
+			cstr += lines[lnum][c];
+		}
+	}
+	return arr;
+}
+
 function extractChords(lnum){
 		let arr = [];
 		while(lines[lnum] !== "" && lnum < lines.length){ // Reach end of chorus or stanza block or end of song
-			let cstr = ""; // Store lyrics of this line
-			let chordline = []; // Store chords of this line
-			for(let c = 0; c < lines[lnum].length; c++){ // Go through each character
-				if(lines[lnum][c] === "["){ // Detected chord
-					//console.log(cstr);
-					c++; // Skip '['
-					let chord = "";
-					while(lines[lnum][c] !== "]"){ // Store chord (assumes chord does not reach end of line)
-						chord += lines[lnum][c];
-						c++;
-					}
-					let s = syl(cstr); // Count syllables
-					//console.log(s);
-					arr.push([chord, s]);
-				}else{
-					cstr += lines[lnum][c];
-				}
-			}
+			arr.push(extractChordLine(lnum));
 			lnum++;
 		}
 		return [lnum, arr];
@@ -36,15 +42,17 @@ function readTune(i){
             let result = extractChords(i);
             i = result[0];
             chorusChords = result[1];
-        }else{ // Inject chords into 
-            
         }
-    }
+    }else if(/^([0-9]+)$/.test(lines[i]){ // Stanza number
+		//TODO LEFTOFF
+		// Get stanza chords and then we are going to start writing to it
+	}
     return i;
 }
 
 function writeTune(i){
 	// Writing through lines
+	// Assumes the lines have the same amount of syllables in them.
 	if(lines){
     }
     return i;
