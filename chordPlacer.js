@@ -2,6 +2,7 @@
 let lyrics = song.props.lyrics;
 let lines = lyrics.split("\n");
 let chorusChords = [];
+let stanzaChords = [];
 
 function extractChordLine(lnum){
 	let arr = [];
@@ -41,11 +42,15 @@ function readTune(i){
         if(lines[i].includes("[")){ // Has chords
             let result = extractChords(i);
             i = result[0];
-            chorusChords = result[1];
+            chorusChords = result[1]; // Assumes only 1 chorus with chords
         }
-    }else if(/^([0-9]+)$/.test(lines[i]){ // Stanza number
-		//TODO LEFTOFF
-		// Get stanza chords and then we are going to start writing to it
+    }else if(/^([0-9]+)$/.test(lines[i])){ // Stanza number
+		i++;
+		if(lines[i].includes("[")){ // Has chords
+			let result = extractChords(i);
+			i = result[0];
+			stanzaChords = result[1]; // Assumes only 1 stanza with chords
+		}
 	}
     return i;
 }
@@ -53,8 +58,19 @@ function readTune(i){
 function writeTune(i){
 	// Writing through lines
 	// Assumes the lines have the same amount of syllables in them.
-	if(lines){
-    }
+	if(lines[i].substring(0, 2) === "  "){ // Chorus
+        if(lines[i].includes("[")){ // Has chords
+            let result = extractChords(i);
+            i = result[0];
+            chorusChords = result[1]; // Assumes only 1 chorus with chords
+        }
+    }else if(/^([0-9]+)$/.test(lines[i])){ // Stanza number
+		i++;
+		if(lines[i].includes("[")){ // Has chords
+			let result = extractChords(i);
+			i = result[0];
+			stanzaChords = result[1]; // Assumes only 1 stanza with chords
+		}
     return i;
 }
 
@@ -86,7 +102,7 @@ function placeChords() {
 }
 
 // Syllable counting code (using js injection)
-var js = document.createElement("script");
+let js = document.createElement("script");
 js.type = "module";
 js.innerHTML = `
 import {syllable} from 'https://esm.sh/syllable@5?bundle';
