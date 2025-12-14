@@ -145,30 +145,31 @@ function readTune(i){
 }
 
 function placeChordLine(lnum, arr){
-	let cstr = ""; // Store lyrics of this line
-	let chordline = []; // Store chords of this line
-	for(let c = 0; c < lines[lnum].length; c++){ // Go through each character
-		if(lines[lnum][c] === "["){ // Detected chord
-			//console.log(cstr);
-			c++; // Skip '['
-			let chord = "";
-			while(lines[lnum][c] !== "]"){ // Store chord (assumes chord does not reach end of line)
-				chord += lines[lnum][c];
-				c++;
-			}
-			let s = syl(cstr); // Count syllables
-			//console.log(s);
-			arr.push([chord, s]);
-		}else{
-			cstr += lines[lnum][c];
+	let astr = ""; // Store lyrics of this line
+	let c = 0;
+	for(let a = 0; a < arr.length; a++){ // Go through each character
+		let s = syl(astr);
+		while(s != arr[a][1] && c < lines[lnum].length){
+			astr += lines[lnum][c];
+			s = syl(astr);
+			c++;
 		}
+		if(c >= lines[lnum].length){ // End of line
+			while(a < arr.length){ // Fill the end of line with remaining chords
+				lines[lnum] += "["+arr[a][0]+"]";
+			}
+			break;
+		}
+		// Insert chord by slicing string
+		lines[lnum] = lines[lnum].slice(0, c-1)+"["+arr[a][0]+"]"+lines[lnum].slice(c-1);
+		c += arr[a][0].length+2;
 	}
-	return arr;
 }
 
 function placeChords(lnum, arr){
+	let initialnum = lnum;
 	while(lines[lnum] !== "" && lnum < lines.length){ // Reach end of chorus or stanza block or end of song
-		arr.push(extractChordLine(lnum));
+		extractChordLine(lnum, arr[lnum-initialnum]);
 		lnum++;
 	}
 	return lnum;
@@ -186,6 +187,7 @@ function writeTune(i){
 		if(!lines[i].includes("[")){ // Doesn't have chords (assumes first line without chords means entire block without chords)
 			i = placeChords(i, stanzaChords);
 		}
+	}
     return i;
 }
 
