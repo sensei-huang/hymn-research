@@ -10,45 +10,44 @@ function extractChords(lnum){
 			let chordline = []; // Store chords of this line
 			for(let c = 0; c < lines[lnum].length; c++){ // Go through each character
 				if(lines[lnum][c] === "["){ // Detected chord
+					//console.log(cstr);
 					c++; // Skip '['
 					let chord = "";
 					while(lines[lnum][c] !== "]"){ // Store chord (assumes chord does not reach end of line)
 						chord += lines[lnum][c];
 						c++;
 					}
-					c++; // Skip ']'
-					let syl = syllable(cstr);
-					arr.push([chord, syl]);
+					let s = syl(cstr); // Count syllables
+					//console.log(s);
+					arr.push([chord, s]);
 				}else{
 					cstr += lines[lnum][c];
 				}
 			}
 			lnum++;
-		}	
+		}
 		return [lnum, arr];
 }
 
-function readTune(){
+function readTune(i){
 	// Reading through lines
-	for(let i = 0; i < lines.length; i++){
-		if(lines[i].substring(0, 2) === "  "){ // Chorus
-			if(lines[i].includes("[")){ // Has chords
-				let result = extractChords(i);
-				i = result[0];
-				chorusChords = result[1];
-			}else{ // Inject chords into 
-				
-			}
-		}
-	}
+    if(lines[i].substring(0, 2) === "  "){ // Chorus
+        if(lines[i].includes("[")){ // Has chords
+            let result = extractChords(i);
+            i = result[0];
+            chorusChords = result[1];
+        }else{ // Inject chords into 
+            
+        }
+    }
+    return i;
 }
 
-function writeTune(){
+function writeTune(i){
 	// Writing through lines
-	for(let i = 0; i < lines.length; i++){
-		if(lines){
-		}
-	}
+	if(lines){
+    }
+    return i;
 }
 
 function placeChords() {
@@ -58,7 +57,7 @@ function placeChords() {
 	// Reading through lines
 	for(let i = 0; i < lines.length; i++){
 		if(tune == 0){ // Is currently in correct tune block
-			readTune();
+			i = readTune(i);
 		}
 		if(lines[i].includes("###")){ // Assumes triple hashtag means tune change
 			tune--;
@@ -70,7 +69,7 @@ function placeChords() {
 	// Writing through lines
 	for(let i = 0; i < lines.length; i++){
 		if(tune == 0){ // Is currently in correct tune block
-			writeTune();
+			i = writeTune(i);
 		}
 		if(lines[i].includes("###")){ // Assumes triple hashtag means tune change
 			tune--;
@@ -84,11 +83,16 @@ js.type = "module";
 js.innerHTML = `
 import {syllable} from 'https://esm.sh/syllable@5?bundle';
 import syllables from 'https://esm.sh/syllables@2.2.1?bundle'; 
-function syl(word){
-		return syllables(word, { fallbackSyllablesFunction: syllable });
+window.syl = function(word){
+	return syllables(word, { fallbackSyllablesFunction: syllable });
 }
-window.syllable = syl;
 `;
-js.onreadystatechange = placeChords();
-js.onload = placeChords();
-document.head.appendChild(js);
+document.getElementsByTagName('head')[0].appendChild(js);
+
+// Place chords but wait until the 
+let tid = setInterval(function(){
+	if(typeof(syl) === 'function'){
+		placeChords();
+		clearInterval(tid);
+	}
+}, 100);
