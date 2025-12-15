@@ -7,84 +7,49 @@ async function changeWake(cb){ // Changes wakelock state
 
 async function lockScreen(){ // Turns wakelock on
   try {
-    wakeLock = await navigator.wakeLock.request("screen");
-    wakeLock.onrelease = function(){ // Wake lock turns off when page is inactive so update checkbox to show
-    	wakeLock = null;
-        document.getElementById('wakebox').checked = false;
-    };
+	wakeLock = await navigator.wakeLock.request("screen");
+	wakeLock.onrelease = function(){ // Wake lock turns off when page is inactive so update checkbox to show
+		wakeLock = null;
+		document.getElementById('wakebox').checked = false;
+	};
   } catch (e) {
-    console.error(`Failed to enable screen lock: ${e.name}, ${e.message}`);
+	console.error(`Failed to enable screen lock: ${e.name}, ${e.message}`);
   }
 }
   
 async function unlockScreen(){ // Turns wakelock off
   try {
-    if(wakeLock !== null) { // Check whether or not there is wakelock
-      await wakeLock.release();
-      wakeLock = null;
-    }
+	if(wakeLock !== null) { // Check whether or not there is wakelock
+	  await wakeLock.release();
+	  wakeLock = null;
+	}
   } catch (e) {
-    console.error(`Failed to disable screen lock: ${e.name}, ${e.message}`);
+	console.error(`Failed to disable screen lock: ${e.name}, ${e.message}`);
   }
 }
 
 function createWakeMode(){
 	// Insert toggle switch CSS
 	let style = document.createElement('style');
-	style.innerHTML = `.switch {
-	  position: relative;
-	  display: inline-block;
-	  width: 45px;
-	  height: 26px;
-	}
-	
-	.switch input { 
-	  opacity: 0;
-	  width: 0;
-	  height: 0;
-	}
-	
-	.slider {
-	  position: absolute;
-	  cursor: pointer;
-	  top: 0;
-	  left: 0;
-	  right: 0;
-	  bottom: 0;
-	  background-color: #ccc;
-	  -webkit-transition: .4s;
-	  transition: .4s;
-	  border-radius: 26px;
-	}
-	
-	.slider:before {
-	  position: absolute;
-	  content: "";
-	  height: 20px;
-	  width: 20px;
-	  left: 3px;
-	  bottom: 3px;
-	  background-color: white;
-	  -webkit-transition: .4s;
-	  transition: .4s;
-	  border-radius: 50%;
-	}
-	
-	input:checked + .slider {
-	  background-color: #2196F3;
-	}
-	
-	input:checked + .slider:before {
-	  -webkit-transform: translateX(19px);
-	  -ms-transform: translateX(19px);
-	  transform: translateX(19px);
-	}`;
+	// To change the CSS, copy code from https://github.com/sensei-huang/hymn-research/blob/main/toggleSwitch.css
+	// Minify using https://www.cleancss.com/css-minify/
+	style.innerHTML = '.switch {position: relative;width: 45px;height: 26px;}.switch input {opacity: 0;width: 0;height: 0;}.slider {position: absolute;cursor: pointer;top: 0;left: 0;right: 0;bottom: 0;background-color: #ccc;transition: .4s;border-radius: 26px;}.slider:before {position: absolute;content: "";height: 20px;width: 20px;left: 3px;bottom: 3px;background-color: white;transition: .4s;border-radius: 50%;}input:checked + .slider {background-color: #2196F3;}input:checked + .slider:before {transform: translateX(19px);}.toggleSwitch-container{display: flex;justify-content: center;align-items: center;user-select: none;color: #aaa;}';
 	document.head.appendChild(style);
-	
+
+	let div = document.createElement("div");
+	div.className = "toggleSwitch-container";
+	document.getElementsByClassName("song-app")[0].insertBefore(div, document.getElementsByClassName("home-title")[0].nextSibling); // Assumes there is a home-title element which is a child of song-container
 	let toggleSwitch = document.createElement("label");
 	toggleSwitch.className = "switch";
 	toggleSwitch.innerHTML = '<input type="checkbox" onclick="changeWake(this);" id="wakebox"><span class="slider"></span>';
-	document.getElementsByClassName("song-container")[0].insertBefore(toggleSwitch, document.getElementsByClassName("home-btn")[0].nextSibling); // Assumes there is a home-btn element which is a child of song-container
+	div.append(toggleSwitch);
+	let text = document.createElement("span");
+	text.innerText = "Singing mode (keeps screen awake)";
+	text.style = "margin-left: 10px;";
+	div.append(text);
+	let button = document.createElement("button");
+	button.innerText = "Add chords";
+	div.append(button);
 }
 
 // Lyrics scraping variables
@@ -127,13 +92,13 @@ function extractChords(lnum){
 
 function readTune(i){
 	// Reading through lines
-    if(lines[i].substring(0, 2) === "  "){ // Chorus
-        if(lines[i].includes("[")){ // Has chords (assumes first line with chords means entire block with chords)
-            let result = extractChords(i);
-            i = result[0];
-            chorusChords = result[1]; // Assumes only 1 chorus with chords
-        }
-    }else if(/^([0-9]+)$/.test(lines[i])){ // Stanza number
+	if(lines[i].substring(0, 2) === "  "){ // Chorus
+		if(lines[i].includes("[")){ // Has chords (assumes first line with chords means entire block with chords)
+			let result = extractChords(i);
+			i = result[0];
+			chorusChords = result[1]; // Assumes only 1 chorus with chords
+		}
+	}else if(/^([0-9]+)$/.test(lines[i])){ // Stanza number
 		i++;
 		if(lines[i].includes("[")){ // Has chords (assumes first line with chords means entire block with chords)
 			let result = extractChords(i);
@@ -141,7 +106,7 @@ function readTune(i){
 			stanzaChords = result[1]; // Assumes only 1 stanza with chords
 		}
 	}
-    return i;
+	return i;
 }
 
 function placeChordLine(lnum, arr){
@@ -154,9 +119,10 @@ function placeChordLine(lnum, arr){
 			s = syl(astr);
 			c++;
 		}
-		if(c >= lines[lnum].length){ // End of line
+		if(c == lines[lnum].length){ // End of line
 			while(a < arr.length){ // Fill the end of line with remaining chords
 				lines[lnum] += "["+arr[a][0]+"]";
+				a++;
 			}
 			break;
 		}
@@ -169,7 +135,7 @@ function placeChordLine(lnum, arr){
 function placeChords(lnum, arr){
 	let initialnum = lnum;
 	while(lines[lnum] !== "" && lnum < lines.length){ // Reach end of chorus or stanza block or end of song
-		extractChordLine(lnum, arr[lnum-initialnum]);
+		placeChordLine(lnum, arr[lnum-initialnum]);
 		lnum++;
 	}
 	return lnum;
@@ -179,16 +145,16 @@ function writeTune(i){
 	// Writing through lines
 	// Assumes the lines have the same amount of syllables in them.
 	if(lines[i].substring(0, 2) === "  "){ // Chorus
-        if(!lines[i].includes("[")){ // Doesn't have chords (assumes first line without chords means entire block without chords)
-            i = placeChords(i, chorusChords);
-        }
-    }else if(/^([0-9]+)$/.test(lines[i])){ // Stanza number
+		if(!lines[i].includes("[")){ // Doesn't have chords (assumes first line without chords means entire block without chords)
+			i = placeChords(i, chorusChords);
+		}
+	}else if(/^([0-9]+)$/.test(lines[i])){ // Stanza number
 		i++;
 		if(!lines[i].includes("[")){ // Doesn't have chords (assumes first line without chords means entire block without chords)
 			i = placeChords(i, stanzaChords);
 		}
 	}
-    return i;
+	return i;
 }
 
 function runCode() {
@@ -200,8 +166,10 @@ function runCode() {
 		if(tune == 0){ // Is currently in correct tune block
 			i = readTune(i);
 		}
-		if(lines[i].includes("###")){ // Assumes triple hashtag means tune change
-			tune--;
+		if(i < lines.length){
+			if(lines[i].includes("###")){ // Assumes triple hashtag means tune change
+				tune--;
+			}
 		}
 	}
 
@@ -212,17 +180,22 @@ function runCode() {
 		if(tune == 0){ // Is currently in correct tune block
 			i = writeTune(i);
 		}
-		if(lines[i].includes("###")){ // Assumes triple hashtag means tune change
-			tune--;
+		if(i < lines.length){
+			if(lines[i].includes("###")){ // Assumes triple hashtag means tune change
+				tune--;
+			}
 		}
 	}
 
-	// Update song
-	song.props.lyrics = lines.join("\n");
-	song.forceUpdate();
-
 	// Create wake mode
 	createWakeMode();
+	setInterval(function(){
+		// Update song
+		if(song.props.lyrics != lines.join("\n")){
+			song.props.lyrics = lines.join("\n");
+			song.forceUpdate();
+		}
+	}, 10);
 }
 
 // Syllable counting code (using js injection)
@@ -240,7 +213,7 @@ document.head.appendChild(js);
 // Set interval to wait until syllable counting code has loaded in
 let tid = setInterval(function(){
 	if(typeof(syl) === 'function'){ // Syllable counting code has loaded in
-		runCode();
 		clearInterval(tid);
+		runCode();
 	}
 }, 100);
