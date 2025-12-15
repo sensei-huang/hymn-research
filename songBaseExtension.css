@@ -49,3 +49,14 @@ input:checked + .slider:before {
   user-select: none;
   color: #aaa;
 }
+
+.addChord {
+  background-color: #aaa;
+  border: none;
+  color: white;
+  padding: 7px;
+  text-align: center;
+  cursor: pointer;
+  border-radius: 12px;
+  margin-left:50px;
+}
