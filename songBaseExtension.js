@@ -28,17 +28,21 @@ async function unlockScreen(){ // Turns wakelock off
   }
 }
 
-function createWakeMode(){
+function addButtons(){
 	// Insert toggle switch CSS
 	let style = document.createElement('style');
-	// To change the CSS, copy code from https://github.com/sensei-huang/hymn-research/blob/main/toggleSwitch.css
-	// Minify using https://www.cleancss.com/css-minify/
-	style.innerHTML = '.switch {position: relative;width: 45px;height: 26px;}.switch input {opacity: 0;width: 0;height: 0;}.slider {position: absolute;cursor: pointer;top: 0;left: 0;right: 0;bottom: 0;background-color: #ccc;transition: .4s;border-radius: 26px;}.slider:before {position: absolute;content: "";height: 20px;width: 20px;left: 3px;bottom: 3px;background-color: white;transition: .4s;border-radius: 50%;}input:checked + .slider {background-color: #2196F3;}input:checked + .slider:before {transform: translateX(19px);}.toggleSwitch-container{display: flex;justify-content: center;align-items: center;user-select: none;color: #aaa;}';
+	// To change the CSS, copy code from https://github.com/sensei-huang/hymn-research/blob/main/songBaseExtension.css
+	// Minify using https://csscompressor.com/
+	style.innerHTML = '.switch{position:relative;width:45px;height:26px}.switch input{opacity:0;width:0;height:0}.slider{position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background-color:#ccc;transition:.4s;border-radius:26px}.slider:before{position:absolute;content:"";height:20px;width:20px;left:3px;bottom:3px;background-color:#fff;transition:.4s;border-radius:50%}input:checked + .slider{background-color:#2196F3}input:checked + .slider:before{transform:translateX(19px)}.interactive-container{display:flex;justify-content:center;align-items:center;user-select:none;color:#aaa}.button{background-color:#ccc;border:none;color:#fff;padding:5px 7px;text-align:center;cursor:pointer;border-radius:9px;display:block}.button:hover{transform:scale(1.05);transition:all .3s cubic-bezier(0.05,0.83,0.43,0.96)}.button:active{background-color:#aaa}';
 	document.head.appendChild(style);
 
+	// Add container for toggle switch
+	let songAppEl = document.getElementsByClassName("song-app")[0];
 	let div = document.createElement("div");
-	div.className = "toggleSwitch-container";
-	document.getElementsByClassName("song-app")[0].insertBefore(div, document.getElementsByClassName("home-title")[0].nextSibling); // Assumes there is a home-title element which is a child of song-container
+	div.className = "interactive-container";
+	songAppEl.insertBefore(div, document.getElementsByClassName("home-title")[0].nextSibling); // Assumes there is a home-title element which is a child of song-container
+	
+	// Add singing mode toggle switch
 	let toggleSwitch = document.createElement("label");
 	toggleSwitch.className = "switch";
 	toggleSwitch.innerHTML = '<input type="checkbox" onclick="changeWake(this);" id="wakebox"><span class="slider"></span>';
@@ -47,9 +51,33 @@ function createWakeMode(){
 	text.innerText = "Singing mode (keeps screen awake)";
 	text.style = "margin-left: 10px;";
 	div.append(text);
+
+	// Add container for add chords and auto-play button
+	let div2 = document.createElement("div");
+	div2.className = "interactive-container";
+	div2.style = "justify-content: space-between;";
+	songAppEl.insertBefore(div2, div.nextSibling); // Insert after first container
+	
+	// Add chords button
 	let button = document.createElement("button");
 	button.innerText = "Add chords";
-	div.append(button);
+	button.className = "button";
+	button.style = "margin: 3px 0px 2px 50px;";
+	button.onclick = function(){
+		song.props.lyrics = lines.join('\n');
+		song.forceUpdate();
+	};
+	div2.append(button);
+	
+	// Add autoplay button
+	let button2 = document.createElement("button");
+	button2.innerText = "Autoplay";
+	button2.className = "button";
+	button2.style = "margin: 3px 50px 2px 0px;";
+	button2.onclick = function(){
+		// TODO - add autoplay
+	};
+	div2.append(button2);
 }
 
 // Lyrics scraping variables
@@ -57,6 +85,7 @@ let lyrics = song.props.lyrics;
 let lines = lyrics.split("\n");
 let chorusChords = [];
 let stanzaChords = [];
+let lastTune = song.state.selectedTune;
 
 function extractChordLine(lnum){
 	let arr = [];
@@ -186,16 +215,6 @@ function runCode() {
 			}
 		}
 	}
-
-	// Create wake mode
-	createWakeMode();
-	setInterval(function(){
-		// Update song
-		if(song.props.lyrics != lines.join("\n")){
-			song.props.lyrics = lines.join("\n");
-			song.forceUpdate();
-		}
-	}, 10);
 }
 
 // Syllable counting code (using js injection)
@@ -207,13 +226,13 @@ import syllables from 'https://esm.sh/syllables@2.2.1?bundle';
 window.syl = function(word){
 	return syllables(word, { fallbackSyllablesFunction: syllable });
 }
-`;
-document.head.appendChild(js);
-
-// Set interval to wait until syllable counting code has loaded in
-let tid = setInterval(function(){
-	if(typeof(syl) === 'function'){ // Syllable counting code has loaded in
-		clearInterval(tid);
+runCode();
+addButtons();
+setInterval(function(){ // Check if tune changed
+	if(song.state.selectedTune != lastTune){
+		lastTune = song.state.selectedTune;
 		runCode();
 	}
 }, 100);
+`;
+document.head.appendChild(js);
