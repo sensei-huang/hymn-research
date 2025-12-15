@@ -18,7 +18,6 @@
   right: 0;
   bottom: 0;
   background-color: #ccc;
-  -webkit-transition: .4s;
   transition: .4s;
   border-radius: 26px;
 }
@@ -31,7 +30,6 @@
   left: 3px;
   bottom: 3px;
   background-color: white;
-  -webkit-transition: .4s;
   transition: .4s;
   border-radius: 50%;
 }
@@ -41,8 +39,6 @@ input:checked + .slider {
 }
 
 input:checked + .slider:before {
-  -webkit-transform: translateX(19px);
-  -ms-transform: translateX(19px);
   transform: translateX(19px);
 }
 
