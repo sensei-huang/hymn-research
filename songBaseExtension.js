@@ -29,7 +29,22 @@ async function unlockScreen(){ // Turns wakelock off
 }
 
 function addAutoScrollSpeed(){
-	//TODO
+	let navbar = document.createElement('div');
+	navbar.className = "navbar";
+	navbar.innerHTML = `<span>Scroll speed:</span>
+  	<button class="plusminus" onclick="scrollSpeed -= 0.01; document.getElementById('speedDisplay').innerText = (scrollSpeed*10).toFixed(1);"><svg class="plusminusSVG" viewBox="0 0 20 20"><path d="M2 9h16v3H2z"></path></svg></button>
+    <span id="speedDisplay">1.0</span>
+    <button class="plusminus" onclick="scrollSpeed += 0.01; document.getElementById('speedDisplay').innerText = (scrollSpeed*10).toFixed(1);"><svg class="plusminusSVG" viewBox="0 0 20 20"><path d="M9 11v7h3v-7h7V8h-7V1H9v7H2v3z"></path></svg></button>
+    <span>
+    <button class="button" onclick="removeAutoScrollSpeed();">Stop</button>
+    </span>`;
+	document.getElementsByClassName("song-app")[0].append(navbar);
+}
+
+function removeAutoScrollSpeed(){
+	document.getElementsByClassName("navbar")[0].remove();
+	cancelAnimationFrame(scrollID);
+	autoScrollOn = 0;
 }
 
 function addButtons(){
@@ -37,7 +52,7 @@ function addButtons(){
 	let style = document.createElement('style');
 	// To change the CSS, copy code from https://github.com/sensei-huang/hymn-research/blob/main/songBaseExtension.css
 	// Minify using https://csscompressor.com/
-	style.innerHTML = '.switch{position:relative;width:45px;height:26px}.switch input{opacity:0;width:0;height:0}.slider{position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background-color:#ccc;transition:.4s;border-radius:26px}.slider:before{position:absolute;content:"";height:20px;width:20px;left:3px;bottom:3px;background-color:#fff;transition:.4s;border-radius:50%}input:checked + .slider{background-color:#2196F3}input:checked + .slider:before{transform:translateX(19px)}.interactive-container{display:flex;justify-content:center;align-items:center;user-select:none;color:#aaa}.button{background-color:#ccc;border:none;color:#fff;padding:5px 7px;text-align:center;cursor:pointer;border-radius:9px;display:block}.button:hover{transform:scale(1.05);transition:all .3s cubic-bezier(0.05,0.83,0.43,0.96)}.button:active{background-color:#aaa}';
+	style.innerHTML = '.switch{position:relative;width:45px;height:26px}.switch input{opacity:0;width:0;height:0}.slider{position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background-color:#ccc;transition:.4s;border-radius:26px}.slider:before{position:absolute;content:"";height:20px;width:20px;left:3px;bottom:3px;background-color:#fff;transition:.4s;border-radius:50%}input:checked + .slider{background-color:#2196F3}input:checked + .slider:before{transform:translateX(19px)}.interactive-container{display:flex;justify-content:center;align-items:center;user-select:none;color:#aaa}.button{background-color:#ccc;border:none;color:#fff;padding:5px 7px;text-align:center;cursor:pointer;border-radius:9px;display:block}.button:hover{transform:scale(1.05);transition:all .3s cubic-bezier(0.05,0.83,0.43,0.96)}.button:active{background-color:#aaa}.navbar{user-select:none;width:100%;position:fixed;bottom:0;left:0;display:flex;justify-content:center;align-items:center;background-color:#ddd;opacity:95%}.plusminus{margin:4px;position:relative;background-color:#fff;border:2px solid #ccc;width:25px;height:25px;cursor:pointer;border-radius:50%}.plusminusSVG{display:flex;align-items:center;justify-content:center;position:absolute;margin:2px;top:0;left:0;fill:#ccc}';
 	document.head.appendChild(style);
 
 	// Add container for toggle switch
@@ -45,7 +60,7 @@ function addButtons(){
 	let div = document.createElement("div");
 	div.className = "interactive-container";
 	songAppEl.insertBefore(div, document.getElementsByClassName("home-title")[0].nextSibling); // Assumes there is a home-title element which is a child of song-container
-	
+
 	// Add singing mode toggle switch
 	let toggleSwitch = document.createElement("label");
 	toggleSwitch.className = "switch";
@@ -61,7 +76,7 @@ function addButtons(){
 	div2.className = "interactive-container";
 	div2.style = "justify-content: space-between;";
 	songAppEl.insertBefore(div2, div.nextSibling); // Insert after first container
-	
+
 	// Add chords button
 	let button = document.createElement("button");
 	button.innerText = "Add chords";
@@ -72,24 +87,27 @@ function addButtons(){
 		song.forceUpdate();
 	};
 	div2.append(button);
-	
+
 	// Add autoscroll button
 	let button2 = document.createElement("button");
 	button2.innerText = "Autoscroll";
 	button2.className = "button";
 	button2.style = "margin: 3px 50px 2px 0px;";
 	button2.onclick = function(){
-		scrollPosition = window.scrollY;
-		scrollDecimal = 0;
-		scrollID = requestAnimationFrame(autoScroll);
-		addAutoScrollSpeed();
+		if(autoScrollOn == 0){
+			autoScrollOn = 1;
+			scrollPosition = window.scrollY;
+			scrollDecimal = 0;
+			scrollID = requestAnimationFrame(autoScroll);
+			addAutoScrollSpeed();
+		}
 	};
 	div2.append(button2);
 }
 
 // Auto scroll function
-let scrollPosition, scrollDecimal, scrollID;
-let scrollSpeed = 0.5;
+let scrollPosition, scrollDecimal, scrollID, autoScrollOn = 0;
+let scrollSpeed = 0.1;
 
 function autoScroll() {
 	scrollPosition = window.scrollY+scrollSpeed+scrollDecimal;
@@ -99,8 +117,7 @@ function autoScroll() {
 	if(scrollPosition < document.documentElement.scrollHeight-document.documentElement.clientHeight){
 		scrollID = requestAnimationFrame(autoScroll);
 	}else{
-		cancelAnimationFrame(scrollID);
-		//Remove float menu TODO
+		removeAutoScrollSpeed();
 	}
 }
 
@@ -222,7 +239,7 @@ function writeTune(i){
 function runCode() {
 	let urlParams = new URLSearchParams(window.location.search);
 	let tune = (song.props.lyrics.includes("###")) ? Number(song.state.selectedTune+"")+1 : 0; // Assumes triple # means multiples tunes
-	
+
 	// Reading through lines
 	for(let i = 0; i < lines.length; i++){
 		if(tune == 0){ // Is currently in correct tune block
@@ -236,7 +253,7 @@ function runCode() {
 	}
 
 	tune = (song.props.lyrics.includes("###")) ? Number(song.state.selectedTune+"")+1 : 0; // Reset tune counter
-	
+
 	// Writing through lines
 	for(let i = 0; i < lines.length; i++){
 		if(tune == 0){ // Is currently in correct tune block
