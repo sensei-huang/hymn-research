@@ -2,10 +2,8 @@ import {syllable} from 'https://esm.sh/syllable@5?bundle';
 import syllables from 'https://esm.sh/syllables@2.2.1?bundle'; 
 window.syl = function(word){
 	// Double \ to stop string from tampering
-	if(word.length == 0 || /^\\s+$/.test(word)){ // Eliminate whitespace and empty words
-		return 0;
-	}else if(word.length <= 2){ // To eliminate words like 'W' from becoming 3 syllables
-		return 1;
+	if(/(^|\\s)[wW]$/.test(word)){ // Eliminate w from being three syllables
+		return syllables(word, { fallbackSyllablesFunction: syllable })-2;
 	}else{
 		return syllables(word, { fallbackSyllablesFunction: syllable });
 	}
