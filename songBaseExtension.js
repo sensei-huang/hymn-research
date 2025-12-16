@@ -6,26 +6,30 @@ async function changeWake(cb){ // Changes wakelock state
 }
 
 async function lockScreen(){ // Turns wakelock on
-  try {
-	wakeLock = await navigator.wakeLock.request("screen");
-	wakeLock.onrelease = function(){ // Wake lock turns off when page is inactive so update checkbox to show
-		wakeLock = null;
-		document.getElementById('wakebox').checked = false;
-	};
-  } catch (e) {
-	console.error(`Failed to enable screen lock: ${e.name}, ${e.message}`);
-  }
-}
-  
-async function unlockScreen(){ // Turns wakelock off
-  try {
-	if(wakeLock !== null) { // Check whether or not there is wakelock
-	  await wakeLock.release();
-	  wakeLock = null;
+	try{
+		wakeLock = await navigator.wakeLock.request("screen");
+		wakeLock.onrelease = function(){ // Wake lock turns off when page is inactive so update checkbox to show
+			wakeLock = null;
+			document.getElementById('wakebox').checked = false;
+		};
+	}catch(e){
+		console.error(`Failed to enable screen lock: ${e.name}, ${e.message}`);
 	}
-  } catch (e) {
-	console.error(`Failed to disable screen lock: ${e.name}, ${e.message}`);
-  }
+}
+
+async function unlockScreen(){ // Turns wakelock off
+	try{
+		if(wakeLock !== null) { // Check whether or not there is wakelock
+			await wakeLock.release();
+			wakeLock = null;
+		}
+	}catch(e){
+		console.error(`Failed to disable screen lock: ${e.name}, ${e.message}`);
+	}
+}
+
+function addAutoScrollSpeed(){
+	//TODO
 }
 
 function addButtons(){
@@ -69,15 +73,35 @@ function addButtons(){
 	};
 	div2.append(button);
 	
-	// Add autoplay button
+	// Add autoscroll button
 	let button2 = document.createElement("button");
-	button2.innerText = "Autoplay";
+	button2.innerText = "Autoscroll";
 	button2.className = "button";
 	button2.style = "margin: 3px 50px 2px 0px;";
 	button2.onclick = function(){
-		// TODO - add autoplay
+		scrollPosition = window.scrollY;
+		scrollDecimal = 0;
+		scrollID = requestAnimationFrame(autoScroll);
+		addAutoScrollSpeed();
 	};
 	div2.append(button2);
+}
+
+// Auto scroll function
+let scrollPosition, scrollDecimal, scrollID;
+let scrollSpeed = 0.5;
+
+function autoScroll() {
+	scrollPosition = window.scrollY+scrollSpeed+scrollDecimal;
+	scrollDecimal = scrollPosition-Math.round(scrollPosition); // Get the remaining decimal
+	scrollPosition = Math.round(scrollPosition); // Round the position
+	window.scrollTo(0, scrollPosition);
+	if(scrollPosition < document.documentElement.scrollHeight-document.documentElement.clientHeight){
+		scrollID = requestAnimationFrame(autoScroll);
+	}else{
+		cancelAnimationFrame(scrollID);
+		//Remove float menu TODO
+	}
 }
 
 // Lyrics scraping variables
@@ -93,15 +117,13 @@ function extractChordLine(i){
 	let chordline = []; // Store chords of this line
 	for(let c = 0; c < lines[i].length; c++){ // Go through each character
 		if(lines[i][c] === "["){ // Detected chord
-			//console.log(cstr);
+			let s = syl(cstr); // Count syllables
 			c++; // Skip '['
 			let chord = "";
 			while(lines[i][c] !== "]"){ // Store chord (assumes chord does not reach end of line)
 				chord += lines[i][c];
 				c++;
 			}
-			let s = syl(cstr); // Count syllables
-			//console.log(s);
 			arr.push([chord, s]);
 		}else{
 			cstr += lines[i][c];
@@ -111,12 +133,12 @@ function extractChordLine(i){
 }
 
 function extractChords(i){
-		let arr = [];
-		while(lines[i] !== "" && i < lines.length){ // Reach end of chorus or stanza block or end of song
-			arr.push(extractChordLine(i));
-			i++;
-		}
-		return [i, arr];
+	let arr = [];
+	while(lines[i] !== "" && i < lines.length){ // Reach end of chorus or stanza block or end of song
+		arr.push(extractChordLine(i));
+		i++;
+	}
+	return [i, arr];
 }
 
 function readTune(i){
@@ -158,8 +180,9 @@ function placeChordLine(i, arr){
 		//while(
 		// Insert chord by slicing string
 		if(c == 0){ // Start of line
+			c++;
 			if(lines[i].substring(0, 2) === "  "){ // Chorus
-				c += 3;
+				c += 2;
 				lines[i] = lines[i].slice(0, c-1)+"["+arr[a][0]+"]"+lines[i].slice(c-1);
 			}else{ // Stanza
 				lines[i] = "["+arr[a][0]+"]"+lines[i];
@@ -234,7 +257,13 @@ js.innerHTML = `
 import {syllable} from 'https://esm.sh/syllable@5?bundle';
 import syllables from 'https://esm.sh/syllables@2.2.1?bundle'; 
 window.syl = function(word){
-	return syllables(word, { fallbackSyllablesFunction: syllable });
+	if(word.length == 0){
+		return 0;
+	}else if(word.length <= 2){ // To eliminate words like 'W' from becoming 3 syllables
+		return 1;
+	}else{
+		return syllables(word, { fallbackSyllablesFunction: syllable });
+	}
 }
 runCode();
 addButtons();
