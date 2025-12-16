@@ -121,6 +121,7 @@ function autoScroll() {
 // Lyrics scraping variables
 let lyrics = song.props.lyrics;
 let lines = lyrics.split("\n");
+let firstChorus = -1, firstChorusEnd = -1;
 let chorusChords = [];
 let stanzaChords = [];
 let lastTune = song.state.selectedTune;
@@ -148,7 +149,7 @@ function extractChordLine(i){
 
 function extractChords(i){
 	let arr = [];
-	while(lines[i] !== "" && i < lines.length){ // Reach end of chorus or stanza block or end of song
+	while(lines[i] !== "" && !(/^#.*/.test(lines[i])) && i < lines.length){ // Reach end of chorus or stanza block or end of song
 		arr.push(extractChordLine(i));
 		i++;
 	}
@@ -158,10 +159,31 @@ function extractChords(i){
 function readTune(i){
 	// Reading through lines
 	if(lines[i].substring(0, 2) === "  "){ // Chorus
+		if(firstChorus == -1){ // First chorus found
+			firstChorus = i;
+		}
 		if(lines[i].includes("[")){ // Has chords (assumes first line with chords means entire block with chords)
-			let result = extractChords(i);
-			i = result[0];
-			chorusChords = result[1]; // Assumes only 1 chorus with chords
+			if(firstChorus == i){ // Store firstChorusEnd
+				let result = extractChords(i);
+				i = result[0];
+				chorusChords = result[1]; // Assumes only 1 chorus with chords
+				firstChorusEnd = i;
+			}else{ // Proceed as normal
+				let result = extractChords(i);
+				i = result[0];
+				chorusChords = result[1]; // Assumes only 1 chorus with chords
+			}
+		}else{ // Doesn't have chords
+			if(firstChorus == i){ // Store firstChorusEnd
+				while(lines[i] !== "" && !(/^#.*/.test(lines[i])) && i < lines.length){ // Skip chorus block
+					i++;
+				}
+				firstChorusEnd = i;
+			}else{
+				while(lines[i] !== "" && !(/^#.*/.test(lines[i])) && i < lines.length){ // Skip chorus block
+					i++;
+				}
+			}
 		}
 	}else if(/^([0-9]+)$/.test(lines[i])){ // Stanza number
 		i++;
@@ -169,6 +191,10 @@ function readTune(i){
 			let result = extractChords(i);
 			i = result[0];
 			stanzaChords = result[1]; // Assumes only 1 stanza with chords
+		}else{
+			while(lines[i] !== "" && !(/^#.*/.test(lines[i])) && i < lines.length){ // Skip stanza block
+				i++;
+			}
 		}
 	}
 	return i;
@@ -210,7 +236,7 @@ function placeChordLine(i, arr){
 
 function placeChords(i, arr){
 	let initiai = i;
-	while(lines[i] !== "" && i < lines.length){ // Reach end of chorus or stanza block or end of song
+	while(lines[i] !== "" && !(/^#.*/.test(lines[i])) && i < lines.length){ // Reach end of chorus or stanza block or end of song
 		placeChordLine(i, arr[i-initiai]);
 		i++;
 	}
@@ -228,6 +254,34 @@ function writeTune(i){
 		i++;
 		if(!lines[i].includes("[")){ // Doesn't have chords (assumes first line without chords means entire block without chords)
 			i = placeChords(i, stanzaChords);
+		}else{ // Has chords
+			while(lines[i] !== "" && i < lines.length){ // Skip the stanza block
+				i++;
+			}
+		}
+		while((lines[i] == "" || /^#.*/.test(lines[i])) && i < lines.length){ // Skip till next block or song ended
+			i++;
+		}
+		if(firstChorusEnd > -1 && i > firstChorusEnd){ // If there is a chorus and we are past the chorus
+		 	if(i >= lines.length){
+				if(lines[lines.length-1] != ""){ // No gap at end of song
+					lines.splice(i, 0, ""); // Insert new line for spacing
+					i++;
+				}
+					
+				// Insert chorus from firstChorus until stopped to i-1
+				for(j = firstChorusEnd-1; j >= firstChorus; j--){ // Go in reverse order to make inserting easier
+					lines.splice(i, 0, lines[j]);
+				}
+				i += firstChorusEnd-firstChorus;
+			}else if(lines[i].substring(0, 2) !== "  "){ // Not a chorus after stanza
+				// Insert chorus from firstChorus until stopped to i-1
+				for(j = firstChorusEnd-1; j >= firstChorus; j--){ // Go in reverse order to make inserting easier
+					lines.splice(i, 0, lines[j]);
+				}
+				i += firstChorusEnd-firstChorus;
+				lines.splice(i, 0, ""); // Insert new line for spacing
+			}
 		}
 	}
 	return i;
@@ -269,6 +323,5 @@ let js = document.createElement("script");
 js.type = "module";
 // To change this script, go to https://github.com/sensei-huang/hymn-research/blob/main/syllable.js
 // Minify using https://jscompress.com/
-// TODO fix w problem in words
-js.innerHTML = 'import{syllable}from"https://esm.sh/syllable@5?bundle";import syllables from"https://esm.sh/syllables@2.2.1?bundle";window.syl=function(a){return 0==a.length||/^\\s+$/.test(a)?0:2>=a.length?1:syllables(a,{fallbackSyllablesFunction:syllable})},runCode(),addButtons(),setInterval(function(){song.state.selectedTune!=lastTune&&(lastTune=song.state.selectedTune,runCode())},100);';
+js.innerHTML = 'import{syllable}from"https://esm.sh/syllable@5?bundle";import syllables from"https://esm.sh/syllables@2.2.1?bundle";window.syl=function(a){return /(^|\\s)[wW]$/.test(a)?syllables(a,{fallbackSyllablesFunction:syllable})-2:syllables(a,{fallbackSyllablesFunction:syllable})},runCode(),addButtons(),setInterval(function(){song.state.selectedTune!=lastTune&&(lastTune=song.state.selectedTune,runCode())},100);';
 document.head.appendChild(js);
