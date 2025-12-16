@@ -179,7 +179,7 @@ function placeChordLine(i, arr){
 	let c = 0;
 	for(let a = 0; a < arr.length; a++){ // Go through each character
 		let s = syl(astr);
-		while(s < arr[a][1] && c < lines[i].length){ // Stop when hit end of line or syl
+		while(s < arr[a][1] && c < lines[i].length){ // Stop when hit end of line or syllable reached
 			astr += lines[i][c];
 			s = syl(astr);
 			c++;
@@ -191,7 +191,7 @@ function placeChordLine(i, arr){
 			}
 			break;
 		}
-		//while(
+		// TODO Add how far the chord should be(percentage of syllable) or minimum distance between chords
 		// Insert chord by slicing string
 		if(c == 0){ // Start of line
 			c++;
@@ -269,5 +269,5 @@ let js = document.createElement("script");
 js.type = "module";
 // To change this script, go to https://github.com/sensei-huang/hymn-research/blob/main/syllable.js
 // Minify using https://jscompress.com/
-js.innerHTML = 'import{syllable}from"https://esm.sh/syllable@5?bundle";import syllables from"https://esm.sh/syllables@2.2.1?bundle";window.syl=function(a){return 0==a.length?0:2>=a.length?1:syllables(a,{fallbackSyllablesFunction:syllable})},runCode(),addButtons(),setInterval(function(){song.state.selectedTune!=lastTune&&(lastTune=song.state.selectedTune,runCode())},100);';
+js.innerHTML = 'import{syllable}from"https://esm.sh/syllable@5?bundle";import syllables from"https://esm.sh/syllables@2.2.1?bundle";window.syl=function(a){return 0==a.length||/^\\s+$/.test(a)?0:2>=a.length?1:syllables(a,{fallbackSyllablesFunction:syllable})},runCode(),addButtons(),setInterval(function(){song.state.selectedTune!=lastTune&&(lastTune=song.state.selectedTune,runCode())},100);';
 document.head.appendChild(js);
