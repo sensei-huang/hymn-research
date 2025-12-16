@@ -13,7 +13,7 @@ async function lockScreen(){ // Turns wakelock on
 			document.getElementById('wakebox').checked = false;
 		};
 	}catch(e){
-		console.error("Failed to enable screen lock: "+e.name+", "+e.message");
+		console.error("Failed to enable screen lock: "+e.name+", "+e.message);
 	}
 }
 
@@ -24,7 +24,7 @@ async function unlockScreen(){ // Turns wakelock off
 			wakeLock = null;
 		}
 	}catch(e){
-		console.error("Failed to disable screen lock: "+e.name+", "+e.message");
+		console.error("Failed to disable screen lock: "+e.name+", "+e.message);
 	}
 }
 
