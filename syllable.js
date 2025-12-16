@@ -1,7 +1,7 @@
 import {syllable} from 'https://esm.sh/syllable@5?bundle';
 import syllables from 'https://esm.sh/syllables@2.2.1?bundle'; 
 window.syl = function(word){
-	if(word.length == 0){
+	if(word.length == 0 || /^\s+$/.test(word)){ // Eliminate whitespace and empty words
 		return 0;
 	}else if(word.length <= 2){ // To eliminate words like 'W' from becoming 3 syllables
 		return 1;
