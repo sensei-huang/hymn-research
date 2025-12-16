@@ -31,13 +31,10 @@ async function unlockScreen(){ // Turns wakelock off
 function addAutoScrollSpeed(){
 	let navbar = document.createElement('div');
 	navbar.className = "navbar";
-	navbar.innerHTML = `<span>Scroll speed:</span>
-  	<button class="plusminus" onclick="scrollSpeed -= 0.01; document.getElementById('speedDisplay').innerText = (scrollSpeed*10).toFixed(1);"><svg class="plusminusSVG" viewBox="0 0 20 20"><path d="M2 9h16v3H2z"></path></svg></button>
-    <span id="speedDisplay">1.0</span>
-    <button class="plusminus" onclick="scrollSpeed += 0.01; document.getElementById('speedDisplay').innerText = (scrollSpeed*10).toFixed(1);"><svg class="plusminusSVG" viewBox="0 0 20 20"><path d="M9 11v7h3v-7h7V8h-7V1H9v7H2v3z"></path></svg></button>
-    <span>
-    <button class="button" onclick="removeAutoScrollSpeed();">Stop</button>
-    </span>`;
+	// To change this script, go to https://github.com/sensei-huang/hymn-research/blob/main/navbar.html
+	// Minify using https://codebeautify.org/html-compressor
+	// Change ' to \'
+	navbar.innerHTML = '<span>Scroll speed:</span><button class="plusminus" onclick=\'scrollSpeed-=.01,document.getElementById("speedDisplay").innerText=(10*scrollSpeed).toFixed(1)\'><svg class="plusminusSVG" viewBox="0 0 20 20"><path d="M2 9h16v3H2z"></path></svg></button><span id="speedDisplay">1.0</span><button class="plusminus" onclick=\'scrollSpeed+=.01,document.getElementById("speedDisplay").innerText=(10*scrollSpeed).toFixed(1)\'><svg class="plusminusSVG" viewBox="0 0 20 20"><path d="M9 11v7h3v-7h7V8h-7V1H9v7H2v3z"></path></svg></button><button class="button" onclick="removeAutoScrollSpeed()">Stop</button>';
 	document.getElementsByClassName("song-app")[0].append(navbar);
 }
 
@@ -270,25 +267,7 @@ function runCode() {
 // Syllable counting code (using js injection)
 let js = document.createElement("script");
 js.type = "module";
-js.innerHTML = `
-import {syllable} from 'https://esm.sh/syllable@5?bundle';
-import syllables from 'https://esm.sh/syllables@2.2.1?bundle'; 
-window.syl = function(word){
-	if(word.length == 0){
-		return 0;
-	}else if(word.length <= 2){ // To eliminate words like 'W' from becoming 3 syllables
-		return 1;
-	}else{
-		return syllables(word, { fallbackSyllablesFunction: syllable });
-	}
-}
-runCode();
-addButtons();
-setInterval(function(){ // Check if tune changed
-	if(song.state.selectedTune != lastTune){
-		lastTune = song.state.selectedTune;
-		runCode();
-	}
-}, 100);
-`;
+// To change this script, go to https://github.com/sensei-huang/hymn-research/blob/main/syllable.js
+// Minify using https://jscompress.com/
+js.innerHTML = 'import{syllable}from"https://esm.sh/syllable@5?bundle";import syllables from"https://esm.sh/syllables@2.2.1?bundle";window.syl=function(a){return 0==a.length?0:2>=a.length?1:syllables(a,{fallbackSyllablesFunction:syllable})},runCode(),addButtons(),setInterval(function(){song.state.selectedTune!=lastTune&&(lastTune=song.state.selectedTune,runCode())},100);';
 document.head.appendChild(js);
