@@ -80,6 +80,7 @@ function addButtons(){
 	button.className = "button";
 	button.style = "margin: 3px 0px 2px 50px;";
 	button.onclick = function(){
+		processSong();
 		song.props.lyrics = lines.join('\n');
 		song.forceUpdate();
 	};
@@ -125,6 +126,7 @@ let firstChorus = -1, firstChorusEnd = -1;
 let chorusChords = [];
 let stanzaChords = [];
 let lastTune = song.state.selectedTune;
+let lastSong = song.props.lyrics;
 
 function extractChordLine(i){
 	let arr = [];
@@ -287,7 +289,7 @@ function writeTune(i){
 	return i;
 }
 
-function runCode() {
+function processSong() {
 	let urlParams = new URLSearchParams(window.location.search);
 	let tune = (song.props.lyrics.includes("###")) ? Number(song.state.selectedTune+"")+1 : 0; // Assumes triple # means multiples tunes
 
@@ -323,5 +325,5 @@ let js = document.createElement("script");
 js.type = "module";
 // To change this script, go to https://github.com/sensei-huang/hymn-research/blob/main/syllable.js
 // Minify using https://jscompress.com/
-js.innerHTML = 'import{syllable}from"https://esm.sh/syllable@5?bundle";import syllables from"https://esm.sh/syllables@2.2.1?bundle";window.syl=function(a){return /(^|\\s)[wW]$/.test(a)?syllables(a,{fallbackSyllablesFunction:syllable})-2:syllables(a,{fallbackSyllablesFunction:syllable})},runCode(),addButtons(),setInterval(function(){song.state.selectedTune!=lastTune&&(lastTune=song.state.selectedTune,runCode())},100);';
+js.innerHTML = 'import{syllable}from"https://esm.sh/syllable@5?bundle";import syllables from"https://esm.sh/syllables@2.2.1?bundle";window.syl=function(a){return /(^|\\s)[wW]$/.test(a)?syllables(a,{fallbackSyllablesFunction:syllable})-2:syllables(a,{fallbackSyllablesFunction:syllable})},runCode(),addButtons(),setInterval(function(){(song.state.selectedTune!=lastTune||song.props.lyrics!=lastSong)&&(processSong(),lastTune=song.state.selectedTune,lastSong=song.props.lyrics)},100);';
 document.head.appendChild(js);
