@@ -10,9 +10,10 @@ window.syl = function(word){
 }
 runCode();
 addButtons();
-setInterval(function(){ // Check if tune changed
-	if(song.state.selectedTune != lastTune){
+setInterval(function(){ // Check if tune or song changed
+	if(song.state.selectedTune != lastTune || song.props.lyrics != lastSong){
+		processSong();
 		lastTune = song.state.selectedTune;
-		runCode();
+		lastSong = song.props.lyrics;
 	}
 }, 100);
