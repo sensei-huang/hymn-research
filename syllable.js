@@ -8,7 +8,7 @@ window.syl = function(word){
 		return syllables(word, { fallbackSyllablesFunction: syllable });
 	}
 }
-runCode();
+processSong();
 addButtons();
 setInterval(function(){ // Check if tune or song changed
 	if(song.state.selectedTune != lastTune || song.props.lyrics != lastSong){
