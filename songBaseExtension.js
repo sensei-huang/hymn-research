@@ -126,7 +126,6 @@ let firstChorus = -1, firstChorusEnd = -1;
 let chorusChords = [];
 let stanzaChords = [];
 let lastTune = song.state.selectedTune;
-let lastSong = song.props.lyrics;
 
 function extractChordLine(i){
 	let arr = [];
@@ -325,5 +324,5 @@ let js = document.createElement("script");
 js.type = "module";
 // To change this script, go to https://github.com/sensei-huang/hymn-research/blob/main/syllable.js
 // Minify using https://jscompress.com/
-js.innerHTML = 'import{syllable}from"https://esm.sh/syllable@5?bundle";import syllables from"https://esm.sh/syllables@2.2.1?bundle";window.syl=function(a){return /(^|\\s)[wW]$/.test(a)?syllables(a,{fallbackSyllablesFunction:syllable})-2:syllables(a,{fallbackSyllablesFunction:syllable})},processSong(),addButtons(),setInterval(function(){(song.state.selectedTune!=lastTune||song.props.lyrics!=lastSong)&&(processSong(),lastTune=song.state.selectedTune,lastSong=song.props.lyrics)},100);';
+js.innerHTML = 'import{syllable}from"https://esm.sh/syllable@5?bundle";import syllables from"https://esm.sh/syllables@2.2.1?bundle";window.syl=function(a){return /(^|\\s)[wW]$/.test(a)?syllables(a,{fallbackSyllablesFunction:syllable})-2:syllables(a,{fallbackSyllablesFunction:syllable})},processSong(),addButtons(),setInterval(function(){(song.state.selectedTune!=lastTune||lyrics!=lastSong)&&(lyrics=song.props.lyrics,lines=lyrics.split("\n"),processSong(),lastTune=song.state.selectedTune)},100);';
 document.head.appendChild(js);
