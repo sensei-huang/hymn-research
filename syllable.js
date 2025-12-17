@@ -11,7 +11,7 @@ window.syl = function(word){
 processSong();
 addButtons();
 setInterval(function(){ // Check if tune or song changed
-	if(song.state.selectedTune != lastTune || lyrics != lastSong){
+	if(song.state.selectedTune != lastTune || song.props.lyrics != lyrics){
 		lyrics = song.props.lyrics;
 		// Double \ to stop string from tampering
 		lines = lyrics.split("\\n");
