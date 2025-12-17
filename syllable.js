@@ -11,9 +11,10 @@ window.syl = function(word){
 processSong();
 addButtons();
 setInterval(function(){ // Check if tune or song changed
-	if(song.state.selectedTune != lastTune || song.props.lyrics != lastSong){
+	if(song.state.selectedTune != lastTune || lyrics != lastSong){
+		lyrics = song.props.lyrics;
+		lines = lyrics.split("\n");
 		processSong();
 		lastTune = song.state.selectedTune;
-		lastSong = song.props.lyrics;
 	}
 }, 100);
