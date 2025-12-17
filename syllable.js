@@ -13,7 +13,8 @@ addButtons();
 setInterval(function(){ // Check if tune or song changed
 	if(song.state.selectedTune != lastTune || lyrics != lastSong){
 		lyrics = song.props.lyrics;
-		lines = lyrics.split("\n");
+		// Double \ to stop string from tampering
+		lines = lyrics.split("\\n");
 		processSong();
 		lastTune = song.state.selectedTune;
 	}
