@@ -11,11 +11,11 @@ window.syl = function(word){
 processSong();
 addButtons();
 setInterval(function(){ // Check if tune or song changed
-	if(song.state.selectedTune != lastTune || song.props.lyrics != lyrics){
-		lyrics = song.props.lyrics;
+	if(Number(song.state.selectedTune) != tune || song.props.lyrics != lyrics){
+		tune = Number(song.state.selectedTune);
+		lyrics = song.lyricArray()[tune];
 		// Double \ to stop string from tampering
 		lines = lyrics.split("\\n");
 		processSong();
-		lastTune = song.state.selectedTune;
 	}
 }, 100);
