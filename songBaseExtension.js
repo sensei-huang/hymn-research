@@ -1,6 +1,19 @@
-// Wake mode functions
-let wakeLock = null; // Variable to store wakelock
+// Wakelock variable
+let wakeLock = null
 
+// Auto-scroll variables
+let scrollPosition, scrollDecimal, scrollID, autoScrollOn = 0;
+let scrollSpeed = 0.1;
+
+// Lyrics scraping variables
+let tune = Number(song.state.selectedTune);
+let lyrics = song.lyricArray()[tune];
+let lines = lyrics.split("\n");
+let firstChorus = -1, firstChorusEnd = -1;
+let chorusChords = [];
+let stanzaChords = [];
+
+// Wake mode functions
 async function changeWake(cb){ // Changes wakelock state
 	cb.checked ? await lockScreen() : await unlockScreen();
 }
@@ -104,9 +117,6 @@ function addButtons(){
 }
 
 // Auto scroll function
-let scrollPosition, scrollDecimal, scrollID, autoScrollOn = 0;
-let scrollSpeed = 0.1;
-
 function autoScroll() {
 	scrollPosition = window.scrollY+scrollSpeed+scrollDecimal;
 	scrollDecimal = scrollPosition-Math.round(scrollPosition); // Get the remaining decimal
@@ -119,14 +129,7 @@ function autoScroll() {
 	}
 }
 
-// Lyrics scraping variables
-let lyrics = song.props.lyrics;
-let lines = lyrics.split("\n");
-let firstChorus = -1, firstChorusEnd = -1;
-let chorusChords = [];
-let stanzaChords = [];
-let lastTune = song.state.selectedTune;
-
+// Chord reading functions
 function extractChordLine(i){
 	let arr = [];
 	let cstr = ""; // Store lyrics of this line
@@ -201,6 +204,7 @@ function readTune(i){
 	return i;
 }
 
+// Chord writing functions
 function placeChordLine(i, arr){
 	let astr = ""; // Store lyrics of this line
 	let c = 0;
@@ -289,33 +293,11 @@ function writeTune(i){
 }
 
 function processSong() {
-	let urlParams = new URLSearchParams(window.location.search);
-	let tune = (song.props.lyrics.includes("###")) ? Number(song.state.selectedTune+"")+1 : 0; // Assumes triple # means multiples tunes
-
-	// Reading through lines
 	for(let i = 0; i < lines.length; i++){
-		if(tune == 0){ // Is currently in correct tune block
-			i = readTune(i);
-		}
-		if(i < lines.length){
-			if(lines[i].includes("###")){ // Assumes triple hashtag means tune change
-				tune--;
-			}
-		}
+		i = readTune(i);
 	}
-
-	tune = (song.props.lyrics.includes("###")) ? Number(song.state.selectedTune+"")+1 : 0; // Reset tune counter
-
-	// Writing through lines
 	for(let i = 0; i < lines.length; i++){
-		if(tune == 0){ // Is currently in correct tune block
-			i = writeTune(i);
-		}
-		if(i < lines.length){
-			if(lines[i].includes("###")){ // Assumes triple hashtag means tune change
-				tune--;
-			}
-		}
+		i = writeTune(i);
 	}
 }
 
@@ -324,5 +306,5 @@ let js = document.createElement("script");
 js.type = "module";
 // To change this script, go to https://github.com/sensei-huang/hymn-research/blob/main/syllable.js
 // Minify using https://jscompress.com/
-js.innerHTML = 'import{syllable}from"https://esm.sh/syllable@5?bundle";import syllables from"https://esm.sh/syllables@2.2.1?bundle";window.syl=function(a){return /(^|\\s)[wW]$/.test(a)?syllables(a,{fallbackSyllablesFunction:syllable})-2:syllables(a,{fallbackSyllablesFunction:syllable})},processSong(),addButtons(),setInterval(function(){(song.state.selectedTune!=lastTune||song.props.lyrics!=lyrics)&&(lyrics=song.props.lyrics,lines=lyrics.split("\\n"),processSong(),lastTune=song.state.selectedTune)},100);';
+js.innerHTML = 'import{syllable}from"https://esm.sh/syllable@5?bundle";import syllables from"https://esm.sh/syllables@2.2.1?bundle";window.syl=function(a){return /(^|\\s)[wW]$/.test(a)?syllables(a,{fallbackSyllablesFunction:syllable})-2:syllables(a,{fallbackSyllablesFunction:syllable})},processSong(),addButtons(),setInterval(function(){(+song.state.selectedTune!=tune||song.props.lyrics!=lyrics)&&(tune=+song.state.selectedTune,lyrics=song.lyricArray()[tune],lines=lyrics.split("\\n"),processSong())},100);';
 document.head.appendChild(js);
