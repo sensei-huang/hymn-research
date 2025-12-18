@@ -308,3 +308,9 @@ js.type = "module";
 // Minify using https://jscompress.com/
 js.innerHTML = 'import{syllable}from"https://esm.sh/syllable@5?bundle";import syllables from"https://esm.sh/syllables@2.2.1?bundle";window.syl=function(a){return /(^|\\s)[wW]$/.test(a)?syllables(a,{fallbackSyllablesFunction:syllable})-2:syllables(a,{fallbackSyllablesFunction:syllable})},processSong(),addButtons(),setInterval(function(){(+song.state.selectedTune!=tune||song.props.lyrics!=lyrics)&&(tune=+song.state.selectedTune,lyrics=song.lyricArray()[tune],lines=lyrics.split("\\n"),processSong())},100);';
 document.head.appendChild(js);
+
+window.addEventListener('scroll', (e) => {
+	if($app.state.page != "index"){ // Assumes $app variable still exists
+		e.stopImmediatePropagation(); // Stops scrolling listener on document element if the page is not the index (to stop rerendering).
+	}
+}, true);
