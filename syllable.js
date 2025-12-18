@@ -8,14 +8,4 @@ window.syl = function(word){
 		return syllables(word, { fallbackSyllablesFunction: syllable });
 	}
 }
-processSong();
 addButtons();
-setInterval(function(){ // Check if tune or song changed
-	if(Number(song.state.selectedTune) != tune || song.props.lyrics != lyrics){
-		tune = Number(song.state.selectedTune);
-		lyrics = song.lyricArray()[tune];
-		// Double \ to stop string from tampering
-		lines = lyrics.split("\\n");
-		processSong();
-	}
-}, 100);
