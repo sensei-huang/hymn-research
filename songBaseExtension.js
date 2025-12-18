@@ -6,9 +6,7 @@ let scrollPosition, scrollDecimal, scrollID, autoScrollOn = 0;
 let scrollSpeed = 0.1;
 
 // Lyrics scraping variables
-let tune = Number(song.state.selectedTune);
-let lyrics = song.lyricArray()[tune];
-let lines = lyrics.split("\n");
+let tune, lyrics, lines;
 let firstChorus = -1, firstChorusEnd = -1;
 let chorusChords = [];
 let stanzaChords = [];
@@ -94,8 +92,7 @@ function addButtons(){
 	button.style = "margin: 3px 0px 2px 50px;";
 	button.onclick = function(){
 		processSong();
-		song.props.lyrics = lines.join('\n');
-		song.forceUpdate();
+		updateSong();
 	};
 	div2.append(button);
 
@@ -260,20 +257,21 @@ function writeTune(i){
 		if(!lines[i].includes("[")){ // Doesn't have chords (assumes first line without chords means entire block without chords)
 			i = placeChords(i, stanzaChords);
 		}else{ // Has chords
-			while(lines[i] !== "" && i < lines.length){ // Skip the stanza block
+			while(lines[i] !== "" && !(/^#.*/.test(lines[i])) && i < lines.length){ // Skip the stanza block
 				i++;
 			}
 		}
-		while((lines[i] == "" || /^#.*/.test(lines[i])) && i < lines.length){ // Skip till next block or song ended
-			i++;
-		}
+		i--;
 		if(firstChorusEnd > -1 && i > firstChorusEnd){ // If there is a chorus and we are past the chorus
-		 	if(i >= lines.length){
+			i++;
+			while((lines[i] == "" || /^#.*/.test(lines[i])) && i < lines.length){ // Skip till next block or song ended
+				i++;
+			}
+		 	if(i == lines.length){
 				if(lines[lines.length-1] != ""){ // No gap at end of song
 					lines.splice(i, 0, ""); // Insert new line for spacing
 					i++;
 				}
-					
 				// Insert chorus from firstChorus until stopped to i-1
 				for(j = firstChorusEnd-1; j >= firstChorus; j--){ // Go in reverse order to make inserting easier
 					lines.splice(i, 0, lines[j]);
@@ -292,7 +290,11 @@ function writeTune(i){
 	return i;
 }
 
-function processSong() {
+function processSong(){
+	// Update variables
+	tune = Number(song.state.selectedTune);
+	lyrics = song.lyricArray()[tune];
+	lines = lyrics.split("\n");
 	for(let i = 0; i < lines.length; i++){
 		i = readTune(i);
 	}
@@ -301,12 +303,26 @@ function processSong() {
 	}
 }
 
+function updateSong(){
+	let lyrArr = song.lyricArray();
+	let combSong = "";
+	for(let i = 0; i < lyrArr.length; i++){
+		if(i == tune){ // Current tune
+			combSong += lines.join("\n");
+		}else{ // Other alternate tunes
+			combSong += lyrArr[i];
+		}
+	}
+	song.props.lyrics = combSong;
+	song.forceUpdate();
+}
+
 // Syllable counting code (using js injection)
 let js = document.createElement("script");
 js.type = "module";
 // To change this script, go to https://github.com/sensei-huang/hymn-research/blob/main/syllable.js
 // Minify using https://jscompress.com/
-js.innerHTML = 'import{syllable}from"https://esm.sh/syllable@5?bundle";import syllables from"https://esm.sh/syllables@2.2.1?bundle";window.syl=function(a){return /(^|\\s)[wW]$/.test(a)?syllables(a,{fallbackSyllablesFunction:syllable})-2:syllables(a,{fallbackSyllablesFunction:syllable})},processSong(),addButtons(),setInterval(function(){(+song.state.selectedTune!=tune||song.props.lyrics!=lyrics)&&(tune=+song.state.selectedTune,lyrics=song.lyricArray()[tune],lines=lyrics.split("\\n"),processSong())},100);';
+js.innerHTML = 'import{syllable}from"https://esm.sh/syllable@5?bundle";import syllables from"https://esm.sh/syllables@2.2.1?bundle";window.syl=function(a){return /(^|\\s)[wW]$/.test(a)?syllables(a,{fallbackSyllablesFunction:syllable})-2:syllables(a,{fallbackSyllablesFunction:syllable})},addButtons();';
 document.head.appendChild(js);
 
 window.addEventListener('scroll', (e) => {
