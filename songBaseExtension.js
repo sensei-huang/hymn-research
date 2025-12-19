@@ -5,9 +5,12 @@ let wakeLock = null
 let scrollPosition, scrollDecimal, scrollID, autoScrollOn = 0;
 let scrollSpeed = 0.1;
 
+// Zoom variable
+let zoomFactor = 1.0;
+
 // Lyrics scraping variables
 let tune, lyrics, lines;
-let firstChorus = -1, firstChorusEnd = -1;
+let firstChorus = -1, firstChorusEnd = -1; // TODO remove
 let chorusChords = [];
 let stanzaChords = [];
 
@@ -108,9 +111,21 @@ function addButtons(){
 			scrollDecimal = 0;
 			scrollID = requestAnimationFrame(autoScroll);
 			addAutoScrollSpeed();
+		}else{
+			removeAutoScrollSpeed();
 		}
 	};
 	div2.append(button2);
+	
+	// Add zoom-in functions
+	let div3 = document.createElement("div");
+	div3.className = "interactive-container";
+	div3.style = "justify-content: center;";
+	div3.innerHTML = '<span>Zoom:</span><button class="plusminus"onclick=\'zoomFactor-=.1,document.body.style.zoom=zoomFactor,document.getElementById("zoomDisplay").innerText=zoomFactor.toFixed(1)\'><svg class="plusminusSVG"viewBox="0 0 20 20"><path d="M2 9h16v3H2z"></path></svg></button><span id="zoomDisplay">1.0</span><button class="plusminus"onclick=\'zoomFactor+=.1,document.body.style.zoom=zoomFactor,document.getElementById("zoomDisplay").innerText=zoomFactor.toFixed(1)\'><svg class="plusminusSVG"viewBox="0 0 20 20"><path d="M9 11v7h3v-7h7V8h-7V1H9v7H2v3z"></path></svg></button><button class="button"onclick=\'zoomFactor=1.0,document.body.style.zoom=zoomFactor,document.getElementById("zoomDisplay").innerText=zoomFactor.toFixed(1)\'>Reset</button>';
+	songAppEl.insertBefore(div3, div2.nextSibling); // Insert after first container
+	// To change this script, go to https://github.com/sensei-huang/hymn-research/blob/main/zoom.html
+	// Minify using https://codebeautify.org/html-compressor
+	// Change ' to \'
 }
 
 // Auto scroll function
@@ -118,8 +133,8 @@ function autoScroll() {
 	scrollPosition = window.scrollY+scrollSpeed+scrollDecimal;
 	scrollDecimal = scrollPosition-Math.round(scrollPosition); // Get the remaining decimal
 	scrollPosition = Math.round(scrollPosition); // Round the position
-	window.scrollTo(0, scrollPosition);
-	if(scrollPosition < document.documentElement.scrollHeight-document.documentElement.clientHeight){
+	window.scrollTo(window.scrollX, scrollPosition);
+	if(scrollPosition <= document.documentElement.scrollHeight-document.documentElement.clientHeight){
 		scrollID = requestAnimationFrame(autoScroll);
 	}else{
 		removeAutoScrollSpeed();
@@ -134,13 +149,43 @@ function extractChordLine(i){
 	for(let c = 0; c < lines[i].length; c++){ // Go through each character
 		if(lines[i][c] === "["){ // Detected chord
 			let s = syl(cstr); // Count syllables
+			// console.log(cstr+s);
+			let percent, tempcstr = "";
+			let startsyl = -1, endsyl = -1;
+			for(let tempc = 0; tempc < lines[i].length; tempc++){
+				if(lines[i][tempc] === "["){ // Skip chord for syllable counting
+					while(lines[i][tempc] !== "]"){
+						tempc++;
+					}
+				}else{
+					tempcstr += lines[i][tempc];
+					let temps = syl(tempcstr);
+					if(temps == s && startsyl == -1){
+						startsyl = tempcstr.length;
+					}else if(temps == s+1 && endsyl == -1){
+						endsyl = tempcstr.length;
+						break;
+					}
+				}
+			}
+			if(startsyl == -1){ // Wasn't set because of going over line length
+				startsyl = tempcstr.length;
+				endsyl = tempcstr.length;
+				percent = 0; // Since endsyl-startsyl = 0, divide by 0 would occur
+			}else if(endsyl == -1){ // Wasn't set because of going over line length
+				endsyl = tempcstr.length;
+				percent = (cstr.length-startsyl)/(endsyl-startsyl);
+			}else{
+				percent = (cstr.length-startsyl)/(endsyl-startsyl);
+			}
+			// console.log(lines[i]+"|"+(cstr.length)+"|"+startsyl+"|"+endsyl+"|"+percent+"|"+s);
 			c++; // Skip '['
 			let chord = "";
 			while(lines[i][c] !== "]"){ // Store chord (assumes chord does not reach end of line)
 				chord += lines[i][c];
 				c++;
 			}
-			arr.push([chord, s]);
+			arr.push([chord, s, percent]);
 		}else{
 			cstr += lines[i][c];
 		}
@@ -206,31 +251,37 @@ function placeChordLine(i, arr){
 	let astr = ""; // Store lyrics of this line
 	let c = 0;
 	for(let a = 0; a < arr.length; a++){ // Go through each character
+		// TODO FIX
 		let s = syl(astr);
 		while(s < arr[a][1] && c < lines[i].length){ // Stop when hit end of line or syllable reached
 			astr += lines[i][c];
 			s = syl(astr);
 			c++;
 		}
-		if(c == lines[i].length){ // End of line
+		// Measure syllable length(supposed syllable length as hyphenation will occur at different places e.g. syllable: prec|i|ous vs hyphenation: pre|cious)
+		let tempastr = astr;
+		let tempc = c;
+		while(s < arr[a][1]+1 && tempc < lines[i].length){ // Go to start of next syllable
+			tempastr += lines[i][tempc];
+			s = syl(tempastr);
+			tempc++;
+		}
+		let newc = c+Math.round((tempc-c)*arr[a][2]); // Add percentage of syllable length
+		while(c < newc){ // Update new c(that has had percentage of syllable length factored in)
+			astr += lines[i][c];
+			c++;
+		}
+		
+		if(c >= lines[i].length){ // End of line
 			while(a < arr.length){ // Fill the end of line with remaining chords
 				lines[i] += "["+arr[a][0]+"]";
 				a++;
 			}
 			break;
-		}
-		// TODO Add how far the chord should be(percentage of syllable) or minimum distance between chords
-		// Insert chord by slicing string
-		if(c == 0){ // Start of line
-			c++;
-			if(lines[i].substring(0, 2) === "  "){ // Chorus
-				c += 2;
-				lines[i] = lines[i].slice(0, c-1)+"["+arr[a][0]+"]"+lines[i].slice(c-1);
-			}else{ // Stanza
-				lines[i] = "["+arr[a][0]+"]"+lines[i];
-			}
+		}else if(c == 0){ // Start of line
+			lines[i] = "["+arr[a][0]+"]"+lines[i];
 		}else{ // Middle of line
-			lines[i] = lines[i].slice(0, c-1)+"["+arr[a][0]+"]"+lines[i].slice(c-1);
+			lines[i] = lines[i].slice(0, c+Math.round((tempc-c)*arr[a][2]))+"["+arr[a][0]+"]"+lines[i].slice(c+Math.round((tempc-c)*arr[a][2]));
 		}
 		c += arr[a][0].length+2;
 	}
@@ -322,7 +373,7 @@ let js = document.createElement("script");
 js.type = "module";
 // To change this script, go to https://github.com/sensei-huang/hymn-research/blob/main/syllable.js
 // Minify using https://jscompress.com/
-js.innerHTML = 'import{syllable}from"https://esm.sh/syllable@5?bundle";import syllables from"https://esm.sh/syllables@2.2.1?bundle";window.syl=function(a){return /(^|\\s)[wW]$/.test(a)?syllables(a,{fallbackSyllablesFunction:syllable})-2:syllables(a,{fallbackSyllablesFunction:syllable})},addButtons();';
+js.innerHTML = 'import{syllable}from"https://esm.sh/syllable@5?bundle";import syllables from"https://esm.sh/syllables@2.2.1?bundle";window.syl=function(a){return /(^|\\s)[^\\s]{1,2}$/.test(a)?syllables(a.replace(/[^\\s]{1,2}$/,""),{fallbackSyllablesFunction:syllable})+1:/(^|\\s)[wW]$/.test(a)?syllables(a,{fallbackSyllablesFunction:syllable})-2:syllables(a,{fallbackSyllablesFunction:syllable})},addButtons();';
 document.head.appendChild(js);
 
 window.addEventListener('scroll', (e) => {
