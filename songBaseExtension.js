@@ -149,7 +149,6 @@ function extractChordLine(i){
 	for(let c = 0; c < lines[i].length; c++){ // Go through each character
 		if(lines[i][c] === "["){ // Detected chord
 			let s = syl(cstr); // Count syllables
-			// console.log(cstr+s);
 			let percent, tempcstr = "";
 			let startsyl = -1, endsyl = -1;
 			for(let tempc = 0; tempc < lines[i].length; tempc++){
@@ -158,7 +157,9 @@ function extractChordLine(i){
 						tempc++;
 					}
 				}else{
-					tempcstr += lines[i][tempc];
+					if(/[\w\s]/.test(lines[i][tempc])){ // Only allow whitespaces and letters
+						tempcstr += lines[i][tempc];
+					}
 					let temps = syl(tempcstr);
 					if(temps == s && startsyl == -1){
 						startsyl = tempcstr.length;
@@ -178,7 +179,6 @@ function extractChordLine(i){
 			}else{
 				percent = (cstr.length-startsyl)/(endsyl-startsyl);
 			}
-			// console.log(lines[i]+"|"+(cstr.length)+"|"+startsyl+"|"+endsyl+"|"+percent+"|"+s);
 			c++; // Skip '['
 			let chord = "";
 			while(lines[i][c] !== "]"){ // Store chord (assumes chord does not reach end of line)
@@ -187,7 +187,9 @@ function extractChordLine(i){
 			}
 			arr.push([chord, s, percent]);
 		}else{
-			cstr += lines[i][c];
+			if(/[\w\s]/.test(lines[i][c])){ // Only allow whitespaces and letters
+				cstr += lines[i][c];
+			}
 		}
 	}
 	return arr;
@@ -251,10 +253,11 @@ function placeChordLine(i, arr){
 	let astr = ""; // Store lyrics of this line
 	let c = 0;
 	for(let a = 0; a < arr.length; a++){ // Go through each character
-		// TODO FIX
 		let s = syl(astr);
 		while(s < arr[a][1] && c < lines[i].length){ // Stop when hit end of line or syllable reached
-			astr += lines[i][c];
+			if(/[\w\s]/.test(lines[i][c])){ // Only allow whitespaces and letters
+				astr += lines[i][c];
+			}
 			s = syl(astr);
 			c++;
 		}
@@ -262,13 +265,17 @@ function placeChordLine(i, arr){
 		let tempastr = astr;
 		let tempc = c;
 		while(s < arr[a][1]+1 && tempc < lines[i].length){ // Go to start of next syllable
-			tempastr += lines[i][tempc];
+			if(/[\w\s]/.test(lines[i][tempc])){ // Only allow whitespaces and letters
+				tempastr += lines[i][tempc];
+			}
 			s = syl(tempastr);
 			tempc++;
 		}
-		let newc = c+Math.round((tempc-c)*arr[a][2]); // Add percentage of syllable length
+		let newc = c+Math.round((tempastr.length-astr.length)*arr[a][2]); // Add percentage of syllable length
 		while(c < newc){ // Update new c(that has had percentage of syllable length factored in)
-			astr += lines[i][c];
+			if(/[\w\s]/.test(lines[i][c])){ // Only allow whitespaces and letters
+				astr += lines[i][c];
+			}
 			c++;
 		}
 		
@@ -281,7 +288,7 @@ function placeChordLine(i, arr){
 		}else if(c == 0){ // Start of line
 			lines[i] = "["+arr[a][0]+"]"+lines[i];
 		}else{ // Middle of line
-			lines[i] = lines[i].slice(0, c+Math.round((tempc-c)*arr[a][2]))+"["+arr[a][0]+"]"+lines[i].slice(c+Math.round((tempc-c)*arr[a][2]));
+			lines[i] = lines[i].slice(0, c)+"["+arr[a][0]+"]"+lines[i].slice(c);
 		}
 		c += arr[a][0].length+2;
 	}
