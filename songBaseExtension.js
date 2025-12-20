@@ -10,7 +10,8 @@ let zoomFactor = 1.0;
 
 // Lyrics scraping variables
 let tune, lyrics, lines;
-let firstChorus = -1, firstChorusEnd = -1; // TODO remove
+let chorusWritten = -1, chorusAlternate = -1;
+let chorusLocation = [];
 let chorusChords = [];
 let stanzaChords = [];
 
@@ -45,10 +46,10 @@ async function unlockScreen(){ // Turns wakelock off
 function addAutoScrollSpeed(){
 	let navbar = document.createElement('div');
 	navbar.className = "navbar";
-	// To change this script, go to https://github.com/sensei-huang/hymn-research/blob/main/navbar.html
+	// To change this html, go to https://github.com/sensei-huang/hymn-research/blob/main/navbar.html
 	// Minify using https://codebeautify.org/html-compressor
 	// Change ' to \'
-	navbar.innerHTML = '<span>Scroll speed:</span><button class="plusminus" onclick=\'scrollSpeed-=.01,document.getElementById("speedDisplay").innerText=(10*scrollSpeed).toFixed(1)\'><svg class="plusminusSVG" viewBox="0 0 20 20"><path d="M2 9h16v3H2z"></path></svg></button><span id="speedDisplay">1.0</span><button class="plusminus" onclick=\'scrollSpeed+=.01,document.getElementById("speedDisplay").innerText=(10*scrollSpeed).toFixed(1)\'><svg class="plusminusSVG" viewBox="0 0 20 20"><path d="M9 11v7h3v-7h7V8h-7V1H9v7H2v3z"></path></svg></button><button class="button" onclick="removeAutoScrollSpeed()">Stop</button>';
+	navbar.innerHTML = '<span>Scroll speed:</span><button class="plusminus"onclick=\'scrollSpeed-=.01,document.getElementById("speedDisplay").innerText=(10*scrollSpeed).toFixed(1)\'><svg class="plusminusSVG"height="17px"viewBox="0 0 20 20"width="17px"><path d="M2 9h16v3H2z"></path></svg></button><span id="speedDisplay">1.0</span><button class="plusminus"onclick=\'scrollSpeed+=.01,document.getElementById("speedDisplay").innerText=(10*scrollSpeed).toFixed(1)\'><svg class="plusminusSVG"height="17px"viewBox="0 0 20 20"width="17px"><path d="M9 11v7h3v-7h7V8h-7V1H9v7H2v3z"></path></svg></button><button class="button"onclick="removeAutoScrollSpeed()">Stop</button>';
 	document.getElementsByClassName("song-app")[0].append(navbar);
 }
 
@@ -121,11 +122,11 @@ function addButtons(){
 	let div3 = document.createElement("div");
 	div3.className = "interactive-container";
 	div3.style = "justify-content: center;";
-	div3.innerHTML = '<span>Zoom:</span><button class="plusminus"onclick=\'zoomFactor-=.1,document.body.style.zoom=zoomFactor,document.getElementById("zoomDisplay").innerText=zoomFactor.toFixed(1)\'><svg class="plusminusSVG"viewBox="0 0 20 20"><path d="M2 9h16v3H2z"></path></svg></button><span id="zoomDisplay">1.0</span><button class="plusminus"onclick=\'zoomFactor+=.1,document.body.style.zoom=zoomFactor,document.getElementById("zoomDisplay").innerText=zoomFactor.toFixed(1)\'><svg class="plusminusSVG"viewBox="0 0 20 20"><path d="M9 11v7h3v-7h7V8h-7V1H9v7H2v3z"></path></svg></button><button class="button"onclick=\'zoomFactor=1.0,document.body.style.zoom=zoomFactor,document.getElementById("zoomDisplay").innerText=zoomFactor.toFixed(1)\'>Reset</button>';
-	songAppEl.insertBefore(div3, div2.nextSibling); // Insert after first container
-	// To change this script, go to https://github.com/sensei-huang/hymn-research/blob/main/zoom.html
+	// To change this html, go to https://github.com/sensei-huang/hymn-research/blob/main/zoom.html
 	// Minify using https://codebeautify.org/html-compressor
 	// Change ' to \'
+	div3.innerHTML = '<span>Zoom:</span><button class="plusminus"onclick=\'zoomFactor-=.1,document.body.style.zoom=zoomFactor,document.getElementById("zoomDisplay").innerText=zoomFactor.toFixed(1)\'><svg class="plusminusSVG"height="17px"viewBox="0 0 20 20"width="17px"><path d="M2 9h16v3H2z"></path></svg></button><span id="zoomDisplay">1.0</span><button class="plusminus"onclick=\'zoomFactor+=.1,document.body.style.zoom=zoomFactor,document.getElementById("zoomDisplay").innerText=zoomFactor.toFixed(1)\'><svg class="plusminusSVG"height="17px"viewBox="0 0 20 20"width="17px"><path d="M9 11v7h3v-7h7V8h-7V1H9v7H2v3z"></path></svg></button><button class="button"onclick=\'zoomFactor=1,document.body.style.zoom=zoomFactor,document.getElementById("zoomDisplay").innerText=zoomFactor.toFixed(1)\'>Reset</button>';
+	songAppEl.insertBefore(div3, div2.nextSibling); // Insert after first container
 }
 
 // Auto scroll function
@@ -204,33 +205,16 @@ function extractChords(i){
 	return [i, arr];
 }
 
-function readTune(i){
-	// Reading through lines
+function processBlock(i){ // TODO: turn approach into write and read and multiple choruses
 	if(lines[i].substring(0, 2) === "  "){ // Chorus
-		if(firstChorus == -1){ // First chorus found
-			firstChorus = i;
-		}
 		if(lines[i].includes("[")){ // Has chords (assumes first line with chords means entire block with chords)
-			if(firstChorus == i){ // Store firstChorusEnd
-				let result = extractChords(i);
-				i = result[0];
-				chorusChords = result[1]; // Assumes only 1 chorus with chords
-				firstChorusEnd = i;
-			}else{ // Proceed as normal
-				let result = extractChords(i);
-				i = result[0];
-				chorusChords = result[1]; // Assumes only 1 chorus with chords
-			}
+			let chorusStart = i;
+			let result = extractChords(i);
+			i = result[0];
+			chorusChords.push(result[1]);
 		}else{ // Doesn't have chords
-			if(firstChorus == i){ // Store firstChorusEnd
-				while(lines[i] !== "" && !(/^#.*/.test(lines[i])) && i < lines.length){ // Skip chorus block
-					i++;
-				}
-				firstChorusEnd = i;
-			}else{
-				while(lines[i] !== "" && !(/^#.*/.test(lines[i])) && i < lines.length){ // Skip chorus block
-					i++;
-				}
+			while(lines[i] !== "" && !(/^#.*/.test(lines[i])) && i < lines.length){ // Skip chorus block
+				i++;
 			}
 		}
 	}else if(/^([0-9]+)$/.test(lines[i])){ // Stanza number
@@ -354,10 +338,7 @@ function processSong(){
 	lyrics = song.lyricArray()[tune];
 	lines = lyrics.split("\n");
 	for(let i = 0; i < lines.length; i++){
-		i = readTune(i);
-	}
-	for(let i = 0; i < lines.length; i++){
-		i = writeTune(i);
+		i = processBlock(i);
 	}
 }
 
