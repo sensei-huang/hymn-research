@@ -1,5 +1,5 @@
 // Wakelock variable
-let wakeLock = null
+let wakeLock = null;
 
 // Auto-scroll variables
 let scrollPosition, scrollDecimal, scrollID, autoScrollOn = 0;
