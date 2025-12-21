@@ -13,7 +13,6 @@ let tune, lyrics, lines;
 let chorusWritten = -1, chorusAlternate = -1;
 let chorusChordsWritten = -1, chorusChordsAlternate = -1;
 let stanzaWritten = -1, stanzaAlternate = -1;
-let chorusLocation = [];
 let chorusChords = [];
 let stanzaChords = [];
 
@@ -53,6 +52,7 @@ function addAutoScrollSpeed(){
 	// Change ' to \'
 	navbar.innerHTML = '<span>Scroll speed:</span><button class="plusminus"onclick=\'scrollSpeed-=.01,document.getElementById("speedDisplay").innerText=(10*scrollSpeed).toFixed(1)\'><svg class="plusminusSVG"height="17px"viewBox="0 0 20 20"width="17px"><path d="M2 9h16v3H2z"></path></svg></button><span id="speedDisplay">1.0</span><button class="plusminus"onclick=\'scrollSpeed+=.01,document.getElementById("speedDisplay").innerText=(10*scrollSpeed).toFixed(1)\'><svg class="plusminusSVG"height="17px"viewBox="0 0 20 20"width="17px"><path d="M9 11v7h3v-7h7V8h-7V1H9v7H2v3z"></path></svg></button><button class="button"onclick="removeAutoScrollSpeed()">Stop</button>';
 	document.getElementsByClassName("song-app")[0].append(navbar);
+	windowScroll = document.documentElement.scrollHeight-document.documentElement.clientHeight
 }
 
 function removeAutoScrollSpeed(){
@@ -137,9 +137,10 @@ function autoScroll() {
 	scrollDecimal = scrollPosition-Math.round(scrollPosition); // Get the remaining decimal
 	scrollPosition = Math.round(scrollPosition); // Round the position
 	window.scrollTo(window.scrollX, scrollPosition);
-	if(scrollPosition <= document.documentElement.scrollHeight-document.documentElement.clientHeight){
+	 // Assumes the reference world button exists
+	if(document.getElementsByClassName("song-reference-toggle")[0].getBoundingClientRect().bottom > window.innerHeight-5){ // Not past the reference button
 		scrollID = requestAnimationFrame(autoScroll);
-	}else{
+	}else{ // Past the reference button
 		removeAutoScrollSpeed();
 	}
 }
@@ -252,9 +253,11 @@ function extractChords(i){
 }
 
 function placeChords(i, arr){
-	let initiai = i;
-	while(lines[i] !== "" && !(/^#.*/.test(lines[i])) && i < lines.length){ // Reach end of chorus or stanza block or end of song
-		placeChordLine(i, arr[i-initiai]);
+	let initiali = i;
+	while(lines[i] !== "" && !(/^#.*/.test(lines[i])) && i < lines.length){ // Reach end of chorus or stanza block or end of song or end of chords
+		if(i-initiali < arr.length){ // Chords exist up to this line
+			placeChordLine(i, arr[i-initiali]);
+		}
 		i++;
 	}
 	return i;
@@ -360,10 +363,18 @@ function processBlock(i){
 }
 
 function processSong(){
-	// Update variables
+	// Reset variables
 	tune = Number(song.state.selectedTune);
 	lyrics = song.lyricArray()[tune];
 	lines = lyrics.split("\n");
+	chorusWritten = -1;
+	chorusAlternate = -1;
+	chorusChordsWritten = -1;
+	chorusChordsAlternate = -1;
+	stanzaWritten = -1;
+	stanzaAlternate = -1;
+	chorusChords = [];
+	stanzaChords = [];
 	let i = 0;
 	while(i < lines.length){
 		i = processBlock(i);
