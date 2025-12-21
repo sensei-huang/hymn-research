@@ -10,7 +10,7 @@ let zoomFactor = 1.0;
 
 // Lyrics scraping variables
 let tune, lyrics, lines;
-let chorusWritten = -1, chorusAlternate = -1;
+let chorusWritten = -1, chorusAlternate = -1, stanzaAlternate = -1;
 let chorusLocation = [];
 let chorusChords = [];
 let stanzaChords = [];
@@ -142,7 +142,6 @@ function autoScroll() {
 	}
 }
 
-// Chord reading functions
 function extractChordLine(i){
 	let arr = [];
 	let cstr = ""; // Store lyrics of this line
@@ -196,43 +195,6 @@ function extractChordLine(i){
 	return arr;
 }
 
-function extractChords(i){
-	let arr = [];
-	while(lines[i] !== "" && !(/^#.*/.test(lines[i])) && i < lines.length){ // Reach end of chorus or stanza block or end of song
-		arr.push(extractChordLine(i));
-		i++;
-	}
-	return [i, arr];
-}
-
-function processBlock(i){ // TODO: turn approach into write and read and multiple choruses
-	if(lines[i].substring(0, 2) === "  "){ // Chorus
-		if(lines[i].includes("[")){ // Has chords (assumes first line with chords means entire block with chords)
-			let chorusStart = i;
-			let result = extractChords(i);
-			i = result[0];
-			chorusChords.push(result[1]);
-		}else{ // Doesn't have chords
-			while(lines[i] !== "" && !(/^#.*/.test(lines[i])) && i < lines.length){ // Skip chorus block
-				i++;
-			}
-		}
-	}else if(/^([0-9]+)$/.test(lines[i])){ // Stanza number
-		i++;
-		if(lines[i].includes("[")){ // Has chords (assumes first line with chords means entire block with chords)
-			let result = extractChords(i);
-			i = result[0];
-			stanzaChords = result[1]; // Assumes only 1 stanza with chords
-		}else{
-			while(lines[i] !== "" && !(/^#.*/.test(lines[i])) && i < lines.length){ // Skip stanza block
-				i++;
-			}
-		}
-	}
-	return i;
-}
-
-// Chord writing functions
 function placeChordLine(i, arr){
 	let astr = ""; // Store lyrics of this line
 	let c = 0;
@@ -278,6 +240,15 @@ function placeChordLine(i, arr){
 	}
 }
 
+function extractChords(i){
+	let arr = [];
+	while(lines[i] !== "" && !(/^#.*/.test(lines[i])) && i < lines.length){ // Reach end of chorus or stanza block or end of song
+		arr.push(extractChordLine(i));
+		i++;
+	}
+	return [i, arr];
+}
+
 function placeChords(i, arr){
 	let initiai = i;
 	while(lines[i] !== "" && !(/^#.*/.test(lines[i])) && i < lines.length){ // Reach end of chorus or stanza block or end of song
@@ -287,46 +258,78 @@ function placeChords(i, arr){
 	return i;
 }
 
-function writeTune(i){
-	// Writing through lines
-	// Assumes the lines have the same amount of syllables in them.
+function processBlock(i){ // TODO: turn approach into write and read and multiple choruses
 	if(lines[i].substring(0, 2) === "  "){ // Chorus
-		if(!lines[i].includes("[")){ // Doesn't have chords (assumes first line without chords means entire block without chords)
-			i = placeChords(i, chorusChords);
+		if(lines[i].includes("[")){ // Has chords (assumes first line with chords means entire block with chords)
+			let chorusStart = i;
+			let result = extractChords(i);
+			i = result[0];
+			chorusChords.push([result[1], chorusStart, i]); // Add line numbers for reference when needing to insert choruses
+		}else{ // Doesn't have chords
+			if(chorusChords.length > 0){ // Previous chords for chorus exist
+				if(chorusAlternate == -1){ // No alternating chorus tune so pick last available tune
+					i = placeChords(i, chorusChords[chorusChords.length-1][0]);
+				}else{ // Has alternating chords
+					i = placeChords(i, chorusChords[chorusAlternate][0]);
+					chorusAlternate = (chorusAlternate+1)%(chorusChords.length); // Alternate/cycle between choruses
+				}
+			}else{ // No chords for chorus
+				while(lines[i] !== "" && !(/^#.*/.test(lines[i])) && i < lines.length){ // Skip chorus block
+					i++;
+				}
+			}
 		}
 	}else if(/^([0-9]+)$/.test(lines[i])){ // Stanza number
-		i++;
-		if(!lines[i].includes("[")){ // Doesn't have chords (assumes first line without chords means entire block without chords)
-			i = placeChords(i, stanzaChords);
-		}else{ // Has chords
-			while(lines[i] !== "" && !(/^#.*/.test(lines[i])) && i < lines.length){ // Skip the stanza block
-				i++;
+		i++; // Skip stanza number
+		if(lines[i].includes("[")){ // Has chords (assumes first line with chords means entire block with chords)
+			let result = extractChords(i);
+			i = result[0];
+			stanzaChords.push(result[1]);
+		}else{ // Doesn't have chords
+			if(stanzaChords.length > 0){ // Previous chords for stanza exist
+				if(stanzaAlternate == -1){ // No alternating stanza tune so pick last available tune
+					i = placeChords(i, stanzaChords[stanzaChords.length-1]);
+				}else{ // Has alternating chords
+					i = placeChords(i, stanzaChords[stanzaAlternate]);
+					stanzaAlternate = (stanzaAlternate+1)%(stanzaChords.length); // Alternate chorus
+				}
+			}else{
+				while(lines[i] !== "" && !(/^#.*/.test(lines[i])) && i < lines.length){ // Skip stanza block
+					i++;
+				}
 			}
 		}
-		i--;
-		if(firstChorusEnd > -1 && i > firstChorusEnd){ // If there is a chorus and we are past the chorus
+		while((lines[i] == "" || /^#.*/.test(lines[i])) && i < lines.length){ // Skip till next block or song ended
 			i++;
-			while((lines[i] == "" || /^#.*/.test(lines[i])) && i < lines.length){ // Skip till next block or song ended
-				i++;
+		}
+		if(chorusChords.length > 0){ // Has chorus
+			let chorusStart, chorusEnd;
+			if(chorusAlternate == -1){ // No alternating chorus tune so pick last available tune
+				chorusStart = chorusChords[chorusChords.length-1][1];
+				chorusEnd = chorusChords[chorusChords.length-1][2];
+			}else{ // Has alternating chords
+				chorusStart = chorusChords[chorusAlternate][1];
+				chorusEnd = chorusChords[chorusAlternate][2];
+				chorusAlternate = (chorusAlternate+1)%(chorusChords.length); // Alternate/cycle between choruses
 			}
-		 	if(i == lines.length){
+			if(i == lines.length){ // Hit end of song
 				if(lines[lines.length-1] != ""){ // No gap at end of song
 					lines.splice(i, 0, ""); // Insert new line for spacing
 					i++;
 				}
-				// Insert chorus from firstChorus until stopped to i-1
-				for(j = firstChorusEnd-1; j >= firstChorus; j--){ // Go in reverse order to make inserting easier
+			}
+			if(i == lines.length || lines[i].substring(0, 2) !== "  "){ // Not a chorus after stanza or end of song
+				// Insert chorus in reverse order to make inserting easier due to splice pushing other items forward
+				for(j = chorusEnd-1; j >= chorusStart; j--){
 					lines.splice(i, 0, lines[j]);
 				}
-				i += firstChorusEnd-firstChorus;
-			}else if(lines[i].substring(0, 2) !== "  "){ // Not a chorus after stanza
-				// Insert chorus from firstChorus until stopped to i-1
-				for(j = firstChorusEnd-1; j >= firstChorus; j--){ // Go in reverse order to make inserting easier
-					lines.splice(i, 0, lines[j]);
-				}
-				i += firstChorusEnd-firstChorus;
+				i += chorusEnd-chorusStart;
 				lines.splice(i, 0, ""); // Insert new line for spacing
 			}
+			console.log(lines);
+			console.log(i);
+		}else{
+			i--; // Go back to empty line as while loop will increment
 		}
 	}
 	return i;
@@ -337,8 +340,10 @@ function processSong(){
 	tune = Number(song.state.selectedTune);
 	lyrics = song.lyricArray()[tune];
 	lines = lyrics.split("\n");
-	for(let i = 0; i < lines.length; i++){
+	let i = 0;
+	while(i < lines.length){
 		i = processBlock(i);
+		i++;
 	}
 }
 
