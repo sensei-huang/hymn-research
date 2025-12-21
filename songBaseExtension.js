@@ -10,7 +10,9 @@ let zoomFactor = 1.0;
 
 // Lyrics scraping variables
 let tune, lyrics, lines;
-let chorusWritten = -1, chorusAlternate = -1, stanzaAlternate = -1;
+let chorusWritten = -1, chorusAlternate = -1;
+let chorusChordsWritten = -1, chorusChordsAlternate = -1;
+let stanzaWritten = -1, stanzaAlternate = -1;
 let chorusLocation = [];
 let chorusChords = [];
 let stanzaChords = [];
@@ -258,20 +260,32 @@ function placeChords(i, arr){
 	return i;
 }
 
-function processBlock(i){ // TODO: turn approach into write and read and multiple choruses
+function processBlock(i){
 	if(lines[i].substring(0, 2) === "  "){ // Chorus
 		if(lines[i].includes("[")){ // Has chords (assumes first line with chords means entire block with chords)
 			let chorusStart = i;
 			let result = extractChords(i);
 			i = result[0];
 			chorusChords.push([result[1], chorusStart, i]); // Add line numbers for reference when needing to insert choruses
+			if(chorusChordsAlternate != -1){ // Assume that a new tune will replace an alternating one since there was a chorus that was written
+				chorusChordsAlternate = -1;
+			}
 		}else{ // Doesn't have chords
 			if(chorusChords.length > 0){ // Previous chords for chorus exist
-				if(chorusAlternate == -1){ // No alternating chorus tune so pick last available tune
+				if(chorusChordsWritten == -1){
+					chorusChordsWritten = 1;
+					if(chorusChords.length > 1){ // Multiple chorus with chords in a row without writing
+						chorusChordsAlternate  = 0; // Start from first tune
+					}
+				}
+				let chorusStart = i;
+				if(chorusChordsAlternate == -1){ // No alternating chorus tune so pick last available tune
 					i = placeChords(i, chorusChords[chorusChords.length-1][0]);
+					chorusChords.push([chorusChords[chorusChords.length-1][0], chorusStart, i]);
 				}else{ // Has alternating chords
-					i = placeChords(i, chorusChords[chorusAlternate][0]);
-					chorusAlternate = (chorusAlternate+1)%(chorusChords.length); // Alternate/cycle between choruses
+					i = placeChords(i, chorusChords[chorusChordsAlternate][0]);
+					chorusChords.push([chorusChords[chorusChordsAlternate][0], chorusStart, i]);
+					chorusChordsAlternate = (chorusChordsAlternate+1)%(chorusChords.length); // Alternate/cycle between choruses
 				}
 			}else{ // No chords for chorus
 				while(lines[i] !== "" && !(/^#.*/.test(lines[i])) && i < lines.length){ // Skip chorus block
@@ -287,6 +301,12 @@ function processBlock(i){ // TODO: turn approach into write and read and multipl
 			stanzaChords.push(result[1]);
 		}else{ // Doesn't have chords
 			if(stanzaChords.length > 0){ // Previous chords for stanza exist
+				if(stanzaWritten == -1){
+					stanzaWritten = 1;
+					if(stanzaChords.length > 1){ // Multiple stanzas with chords in a row without writing
+						stanzaAlternate  = 0; // Start from first tune
+					}
+				}
 				if(stanzaAlternate == -1){ // No alternating stanza tune so pick last available tune
 					i = placeChords(i, stanzaChords[stanzaChords.length-1]);
 				}else{ // Has alternating chords
@@ -302,7 +322,13 @@ function processBlock(i){ // TODO: turn approach into write and read and multipl
 		while((lines[i] == "" || /^#.*/.test(lines[i])) && i < lines.length){ // Skip till next block or song ended
 			i++;
 		}
-		if(chorusChords.length > 0){ // Has chorus
+		if(chorusChords.length > 0 && (i == lines.length || lines[i].substring(0, 2) !== "  ")){ // Has chorus chords and either next block is not chorus or song has finished
+			if(chorusWritten == -1){
+				chorusWritten = 1;
+				if(chorusChords.length > 1){ // Multiple choruses in a row without writing
+					chorusAlternate  = 0; // Start from first chorus
+				}
+			}
 			let chorusStart, chorusEnd;
 			if(chorusAlternate == -1){ // No alternating chorus tune so pick last available tune
 				chorusStart = chorusChords[chorusChords.length-1][1];
@@ -326,8 +352,6 @@ function processBlock(i){ // TODO: turn approach into write and read and multipl
 				i += chorusEnd-chorusStart;
 				lines.splice(i, 0, ""); // Insert new line for spacing
 			}
-			console.log(lines);
-			console.log(i);
 		}else{
 			i--; // Go back to empty line as while loop will increment
 		}
