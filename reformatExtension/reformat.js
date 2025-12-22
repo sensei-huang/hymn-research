@@ -96,4 +96,15 @@ window.getSelection().addRange(range); // to select text
 document.execCommand("copy");
 window.getSelection().removeAllRanges();// to deselect
 storage.remove();
+/*
+When document.execCommand doesn't work, switch to the next approach:
+const clipboardItem = new ClipboardItem({ 
+  'text/html': new Blob([html], { type: 'text/html' }),
+  'text/plain': new Blob([html], { type: 'text/plain' })
+});
+
+navigator.clipboard.write([clipboardItem])
+  .then(() => console.log("clipboard.write() Ok"))
+  .catch(error => alert(error))
+*/
 alert("Copied song!");
