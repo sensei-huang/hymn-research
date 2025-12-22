@@ -1,5 +1,5 @@
-import {syllable} from 'https://esm.sh/syllable@5?bundle';
-import syllables from 'https://esm.sh/syllables@2.2.1?bundle'; 
+import {syllable} from 'https://cdn.jsdelivr.net/npm/syllable@5/+esm';
+import syllables from 'https://cdn.jsdelivr.net/npm/syllables@2.2.1/+esm'; 
 window.syl = function(word){
 	// Double \ to stop string from tampering
 	if(/(^|\\s)[^\\s]{1,2}$/.test(word)){ // Eliminate small words like "th" from being two syllables
