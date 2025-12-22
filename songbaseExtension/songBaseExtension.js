@@ -45,6 +45,9 @@ async function unlockScreen(){ // Turns wakelock off
 }
 
 function addAutoScrollSpeed(){
+	if(scrollSpeed < 0){ // Assumption that no one wants negative scroll speed
+		scrollSpeed = 0.1; // Reset scroll speed
+	}
 	let navbar = document.createElement('div');
 	navbar.className = "navbar";
 	// To change this html, go to https://github.com/sensei-huang/hymn-research/blob/main/songbaseExtensionnavbar.html
@@ -137,8 +140,8 @@ function autoScroll() {
 	scrollDecimal = scrollPosition-Math.round(scrollPosition); // Get the remaining decimal
 	scrollPosition = Math.round(scrollPosition); // Round the position
 	window.scrollTo(window.scrollX, scrollPosition);
-	 // Assumes the reference world button exists
-	if(document.getElementsByClassName("song-reference-toggle")[0].getBoundingClientRect().bottom > window.innerHeight-5){ // Not past the reference button
+	 // Assumes the reference share button exists
+	if(document.getElementById("share-song").getBoundingClientRect().bottom > window.innerHeight-5){ // Not past the share button
 		scrollID = requestAnimationFrame(autoScroll);
 	}else{ // Past the reference button
 		removeAutoScrollSpeed();
@@ -229,8 +232,8 @@ function placeChordLine(i, arr){
 		}
 		
 		if(c >= lines[i].length){ // End of line
-			while(a < arr.length){ // Fill the end of line with remaining chords
-				lines[i] += "["+arr[a][0]+"]";
+			while(a < arr.length){ // Fill the end of line with remaining chords(add spaces for formatting)
+				lines[i] += "["+arr[a][0]+"]"+" ".repeat(arr[a][0].length*3);
 				a++;
 			}
 			break;
@@ -245,19 +248,53 @@ function placeChordLine(i, arr){
 
 function extractChords(i){
 	let arr = [];
+	let isChorus = (lines[i].substring(0, 2) === "  ");
 	while(lines[i] !== "" && !(/^#.*/.test(lines[i])) && i < lines.length){ // Reach end of chorus or stanza block or end of song
 		arr.push(extractChordLine(i));
 		i++;
+	}
+	if(isChorus){
+		let tempi = i;
+		while((lines[tempi] == "" || /^#.*/.test(lines[tempi])) && tempi < lines.length){ // Skip till next block or song ended
+			tempi++;
+		}
+		// Extra conditions for this divine romance and choruses split by a line for readability
+		if(tempi < lines.length && lines[tempi].substring(0, 2) === "  " && lines[tempi].includes("[")){ // Song has not ended and is a chorus and also has chords
+			i = tempi;
+			while(lines[i] !== "" && !(/^#.*/.test(lines[i])) && i < lines.length){ // Reach end of chorus or stanza block or end of song
+				arr.push(extractChordLine(i));
+				i++;
+			}
+		}
 	}
 	return [i, arr];
 }
 
 function placeChords(i, arr){
 	let initiali = i;
+	let isChorus = (lines[i].substring(0, 2) === "  ");
 	while(lines[i] !== "" && !(/^#.*/.test(lines[i])) && i < lines.length){ // Reach end of chorus or stanza block or end of song or end of chords
 		if(i-initiali < arr.length){ // Chords exist up to this line
 			placeChordLine(i, arr[i-initiali]);
 		}
+		i++;
+	}
+	if(i-initiali < arr.length){ // Still has chords to place
+		let tempi = i;
+		let chordComments = "";
+		if(isChorus){
+			chordComments = "  ";
+		}
+		while(i-initiali < arr.length){
+			let chordsToPlace = arr[i-initiali];
+			for(let a = 0; a < chordsToPlace.length; a++){ // Place chords
+				chordComments += "["+chordsToPlace[a][0]+"]"+" ".repeat(chordsToPlace[a][0].length*3);
+			}
+			i++;
+		}
+		i = tempi;
+		lines.splice(i, 0, chordComments);
+		lines.splice(i, 0, "#Unused chords:");
 		i++;
 	}
 	return i;
