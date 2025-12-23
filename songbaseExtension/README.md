@@ -18,6 +18,7 @@ JS:
  - syllable.js
    - Bundle it using https://bundlejs.com/
    - Replace '\\' with '\\\\\\\\'
+   - Replace '\\\\\\\\s' with '\\\\s' for non-capital s's
    - Find and replace the string occuring after 'js.innerHTML = '
  - songBaseExtension.js
    - Minify it using https://happyformatter.com/javascript/online/
