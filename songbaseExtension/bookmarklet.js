@@ -1,6 +1,6 @@
 async function getCode(){
 	try{
-		const response = await fetch('https://cdn.jsdelivr.net/gh/sensei-huang/hymn-research@main/songbaseExtension/songBaseExtension.min.js');
+		const response = await fetch('https://cdn.jsdelivr.net/gh/sensei-huang/hymn-research@latest/songbaseExtension/songBaseExtension.min.js');
 		if(!response.ok){ // No internet
 			let extensionCode = localStorage.getItem("extensionCode");
 			if(extensionCode !== null){ // There is localstorage version
