@@ -41,7 +41,12 @@ function getCodeIDB(){ // Get code from IDB
 	};
 }
 
-function setCodeIDB(code){ // Set code to IDB
+function setCodeIDB(code){ // Set code to IDB and also inject script
+	let extensionScript = document.createElement("script");
+	extensionScript.type = "text/javascript";
+	extensionScript.innerHTML = code;
+	document.head.appendChild(extensionScript);
+	
 	let db;
 	const request = indexedDB.open(DBname);
 	request.onerror = (event) => { // Couldn't load DB
@@ -70,10 +75,6 @@ function setCodeIDB(code){ // Set code to IDB
 		}
 		db.close();
 	};
-	let extensionScript = document.createElement("script");
-	extensionScript.type = "text/javascript";
-	extensionScript.innerHTML = code;
-	document.head.appendChild(extensionScript);
 }
 
 async function injectScript(){
