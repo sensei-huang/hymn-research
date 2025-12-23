@@ -10,6 +10,7 @@ let zoomFactor = 1.0;
 
 // Lyrics scraping variables
 let tune, lyrics, lines;
+let chorusEven = 0, stanzaNumber = 0;
 let chorusWritten = -1, chorusAlternate = -1;
 let chorusChordsWritten = -1, chorusChordsAlternate = -1;
 let stanzaWritten = -1, stanzaAlternate = -1;
@@ -55,7 +56,7 @@ function addAutoScrollSpeed(){
 	// Change ' to \'
 	navbar.innerHTML = '<span>Scroll speed:</span><button class="plusminus"onclick=\'scrollSpeed-=.01,document.getElementById("speedDisplay").innerText=(10*scrollSpeed).toFixed(1)\'><svg class="plusminusSVG"height="17px"viewBox="0 0 20 20"width="17px"><path d="M2 9h16v3H2z"></path></svg></button><span id="speedDisplay">1.0</span><button class="plusminus"onclick=\'scrollSpeed+=.01,document.getElementById("speedDisplay").innerText=(10*scrollSpeed).toFixed(1)\'><svg class="plusminusSVG"height="17px"viewBox="0 0 20 20"width="17px"><path d="M9 11v7h3v-7h7V8h-7V1H9v7H2v3z"></path></svg></button><button class="button"onclick="removeAutoScrollSpeed()">Stop</button>';
 	document.getElementsByClassName("song-app")[0].append(navbar);
-	windowScroll = document.documentElement.scrollHeight-document.documentElement.clientHeight
+	document.getElementById("speedDisplay").innerText = (10*scrollSpeed).toFixed(1); // Update scroll speed
 }
 
 function removeAutoScrollSpeed(){
@@ -249,19 +250,19 @@ function placeChordLine(i, arr){
 function extractChords(i){
 	let arr = [];
 	let isChorus = (lines[i].substring(0, 2) === "  ");
-	while(lines[i] !== "" && !(/^#.*/.test(lines[i])) && i < lines.length){ // Reach end of chorus or stanza block or end of song
+	while(!(/^\s*$/.test(lines[i])) && !(/^#.*/.test(lines[i])) && i < lines.length){ // Reach end of chorus or stanza block or end of song
 		arr.push(extractChordLine(i));
 		i++;
 	}
 	if(isChorus){
 		let tempi = i;
-		while((lines[tempi] == "" || /^#.*/.test(lines[tempi])) && tempi < lines.length){ // Skip till next block or song ended
+		while((/^\s*$/.test(lines[tempi]) || /^#.*/.test(lines[tempi])) && tempi < lines.length){ // Skip till next block or song ended
 			tempi++;
 		}
 		// Extra conditions for this divine romance and choruses split by a line for readability
 		if(tempi < lines.length && lines[tempi].substring(0, 2) === "  " && lines[tempi].includes("[")){ // Song has not ended and is a chorus and also has chords
 			i = tempi;
-			while(lines[i] !== "" && !(/^#.*/.test(lines[i])) && i < lines.length){ // Reach end of chorus or stanza block or end of song
+			while(!(/^\s*$/.test(lines[i])) && !(/^#.*/.test(lines[i])) && i < lines.length){ // Reach end of chorus or stanza block or end of song
 				arr.push(extractChordLine(i));
 				i++;
 			}
@@ -273,7 +274,7 @@ function extractChords(i){
 function placeChords(i, arr){
 	let initiali = i;
 	let isChorus = (lines[i].substring(0, 2) === "  ");
-	while(lines[i] !== "" && !(/^#.*/.test(lines[i])) && i < lines.length){ // Reach end of chorus or stanza block or end of song or end of chords
+	while(!(/^\s*$/.test(lines[i])) && !(/^#.*/.test(lines[i])) && i < lines.length){ // Reach end of chorus or stanza block or end of song or end of chords
 		if(i-initiali < arr.length){ // Chords exist up to this line
 			placeChordLine(i, arr[i-initiali]);
 		}
@@ -328,12 +329,23 @@ function processBlock(i){
 					chorusChordsAlternate = (chorusChordsAlternate+1)%(chorusChords.length); // Alternate/cycle between choruses
 				}
 			}else{ // No chords for chorus
-				while(lines[i] !== "" && !(/^#.*/.test(lines[i])) && i < lines.length){ // Skip chorus block
+				while(!(/^\s*$/.test(lines[i])) && !(/^#.*/.test(lines[i])) && i < lines.length){ // Skip chorus block
 					i++;
 				}
 			}
 		}
+		if(chorusEven == 1 && stanzaNumber%2 == 1){ // There is a chorus after a odd stanza therefore disrupting our originally thought even choruses
+			chorusEven = -1;
+		}
+		if(chorusEven == 0){ // No chorus detected before
+			if(stanzaNumber == 2 && ){ // Even chorus because there are also chords on each stanza beforehand
+				chorusEven = 1;
+			}else{ // Won't have even choruses
+				chorusEven = -1;
+			}
+		}
 	}else if(/^([0-9]+)$/.test(lines[i])){ // Stanza number
+		stanzaNumber++;
 		i++; // Skip stanza number
 		if(lines[i].includes("[")){ // Has chords (assumes first line with chords means entire block with chords)
 			let result = extractChords(i);
@@ -354,15 +366,15 @@ function processBlock(i){
 					stanzaAlternate = (stanzaAlternate+1)%(stanzaChords.length); // Alternate chorus
 				}
 			}else{
-				while(lines[i] !== "" && !(/^#.*/.test(lines[i])) && i < lines.length){ // Skip stanza block
+				while(!(/^\s*$/.test(lines[i])) && !(/^#.*/.test(lines[i])) && i < lines.length){ // Skip stanza block
 					i++;
 				}
 			}
 		}
-		while((lines[i] == "" || /^#.*/.test(lines[i])) && i < lines.length){ // Skip till next block or song ended
+		while((/^\s*$/.test(lines[i]) || /^#.*/.test(lines[i])) && i < lines.length){ // Skip till next block or song ended
 			i++;
 		}
-		if(chorusChords.length > 0 && (i == lines.length || lines[i].substring(0, 2) !== "  ")){ // Has chorus chords and either next block is not chorus or song has finished
+		if(chorusChords.length > 0 && (i == lines.length || lines[i].substring(0, 2) !== "  ") && (chorusEven != 1 || stanzaNumber%2 == 0)){ // Has chorus chords and either next block is not chorus or song has finished and qualifies even choruses
 			if(chorusWritten == -1){
 				chorusWritten = 1;
 				if(chorusChords.length > 1){ // Multiple choruses in a row without writing
@@ -379,7 +391,7 @@ function processBlock(i){
 				chorusAlternate = (chorusAlternate+1)%(chorusChords.length); // Alternate/cycle between choruses
 			}
 			if(i == lines.length){ // Hit end of song
-				if(lines[lines.length-1] != ""){ // No gap at end of song
+				if(!(/^\s*$/.test(lines[lines.length-1]))){ // No whitespace at end of song
 					lines.splice(i, 0, ""); // Insert new line for spacing
 					i++;
 				}
@@ -404,6 +416,8 @@ function processSong(){
 	tune = Number(song.state.selectedTune);
 	lyrics = song.lyricArray()[tune];
 	lines = lyrics.split("\n");
+	chorusEven = 0;
+	stanzaNumber = 0;
 	chorusWritten = -1;
 	chorusAlternate = -1;
 	chorusChordsWritten = -1;
