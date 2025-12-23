@@ -51,10 +51,9 @@ function addAutoScrollSpeed(){
 	}
 	let navbar = document.createElement('div');
 	navbar.className = "navbar";
-	// To change this html, go to https://github.com/sensei-huang/hymn-research/blob/main/songbaseExtensionnavbar.html
+	// To change this html, go to https://github.com/sensei-huang/hymn-research/blob/main/songbaseExtension/navbar.html
 	// Minify using https://codebeautify.org/html-compressor
-	// Change ' to \'
-	navbar.innerHTML = '<span>Scroll speed:</span><button class="plusminus"onclick=\'scrollSpeed-=.01,document.getElementById("speedDisplay").innerText=(10*scrollSpeed).toFixed(1)\'><svg class="plusminusSVG"height="17px"viewBox="0 0 20 20"width="17px"><path d="M2 9h16v3H2z"></path></svg></button><span id="speedDisplay">1.0</span><button class="plusminus"onclick=\'scrollSpeed+=.01,document.getElementById("speedDisplay").innerText=(10*scrollSpeed).toFixed(1)\'><svg class="plusminusSVG"height="17px"viewBox="0 0 20 20"width="17px"><path d="M9 11v7h3v-7h7V8h-7V1H9v7H2v3z"></path></svg></button><button class="button"onclick="removeAutoScrollSpeed()">Stop</button>';
+	navbar.innerHTML = `<span>Scroll speed:</span><button class="plusminus" onclick='scrollSpeed-=.01,document.getElementById("speedDisplay").innerText=(10*scrollSpeed).toFixed(1)'><svg class="plusminusSVG" height="17px" width="17px" viewBox="0 0 20 20"><path d="M2 9h16v3H2z"></path></svg></button><span id="speedDisplay">1.0</span><button class="plusminus" onclick='scrollSpeed+=.01,document.getElementById("speedDisplay").innerText=(10*scrollSpeed).toFixed(1)'><svg class="plusminusSVG" height="17px" width="17px" viewBox="0 0 20 20"><path d="M9 11v7h3v-7h7V8h-7V1H9v7H2v3z"></path></svg></button><button class="button" onclick="removeAutoScrollSpeed()">Stop</button>`;
 	document.getElementsByClassName("song-app")[0].append(navbar);
 	document.getElementById("speedDisplay").innerText = (10*scrollSpeed).toFixed(1); // Update scroll speed
 }
@@ -68,9 +67,9 @@ function removeAutoScrollSpeed(){
 function addButtons(){
 	// Insert toggle switch CSS
 	let style = document.createElement('style');
-	// To change the CSS, copy code from https://github.com/sensei-huang/hymn-research/blob/main/songbaseExtensionsongBaseExtension.css
+	// To change the CSS, copy code from https://github.com/sensei-huang/hymn-research/blob/main/songbaseExtension/songBaseExtension.css
 	// Minify using https://csscompressor.com/
-	style.innerHTML = '.switch{position:relative;width:45px;height:26px}.switch input{opacity:0;width:0;height:0}.slider{position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background-color:#ccc;transition:.4s;border-radius:26px}.slider:before{position:absolute;content:"";height:20px;width:20px;left:3px;bottom:3px;background-color:#fff;transition:.4s;border-radius:50%}input:checked + .slider{background-color:#2196F3}input:checked + .slider:before{transform:translateX(19px)}.interactive-container{display:flex;justify-content:center;align-items:center;user-select:none;color:#aaa}.button{background-color:#ccc;border:none;color:#fff;padding:5px 7px;text-align:center;cursor:pointer;border-radius:9px;display:block}.button:hover{transform:scale(1.05);transition:all .3s cubic-bezier(0.05,0.83,0.43,0.96)}.button:active{background-color:#aaa}.navbar{user-select:none;width:100%;position:fixed;bottom:0;left:0;display:flex;justify-content:center;align-items:center;background-color:#ddd;opacity:95%}.plusminus{margin:4px;position:relative;background-color:#fff;border:2px solid #ccc;width:25px;height:25px;cursor:pointer;border-radius:50%}.plusminusSVG{display:flex;align-items:center;justify-content:center;position:absolute;margin:2px;top:0;left:0;fill:#ccc}';
+	style.innerHTML = `.switch{position:relative;width:45px;height:26px}.switch input{opacity:0;width:0;height:0}.slider{position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background-color:#ccc;transition:.4s;border-radius:26px}.slider:before{position:absolute;content:"";height:20px;width:20px;left:3px;bottom:3px;background-color:#fff;transition:.4s;border-radius:50%}input:checked + .slider{background-color:#2196F3}input:checked + .slider:before{transform:translateX(19px)}.interactive-container{display:flex;justify-content:center;align-items:center;user-select:none;color:#aaa}.button{background-color:#ccc;border:none;color:#fff;padding:5px 7px;text-align:center;cursor:pointer;border-radius:9px;display:block}.button:hover{transform:scale(1.05);transition:all .3s cubic-bezier(0.05,0.83,0.43,0.96)}.button:active{background-color:#aaa}.navbar{user-select:none;width:100%;position:fixed;bottom:0;left:0;display:flex;justify-content:center;align-items:center;background-color:#ddd;opacity:95%}.plusminus{margin:4px;position:relative;background-color:#fff;border:2px solid #ccc;width:25px;height:25px;cursor:pointer;border-radius:50%}.plusminusSVG{display:flex;align-items:center;justify-content:center;position:absolute;margin:2px;top:0;left:0;fill:#ccc}`;
 	document.head.appendChild(style);
 
 	// Add container for toggle switch
@@ -128,10 +127,9 @@ function addButtons(){
 	let div3 = document.createElement("div");
 	div3.className = "interactive-container";
 	div3.style = "justify-content: center;";
-	// To change this html, go to https://github.com/sensei-huang/hymn-research/blob/main/songbaseExtensionzoom.html
+	// To change this html, go to https://github.com/sensei-huang/hymn-research/blob/main/songbaseExtension/zoom.html
 	// Minify using https://codebeautify.org/html-compressor
-	// Change ' to \'
-	div3.innerHTML = '<span>Zoom:</span><button class="plusminus"onclick=\'zoomFactor-=.1,document.body.style.zoom=zoomFactor,document.getElementById("zoomDisplay").innerText=zoomFactor.toFixed(1)\'><svg class="plusminusSVG"height="17px"viewBox="0 0 20 20"width="17px"><path d="M2 9h16v3H2z"></path></svg></button><span id="zoomDisplay">1.0</span><button class="plusminus"onclick=\'zoomFactor+=.1,document.body.style.zoom=zoomFactor,document.getElementById("zoomDisplay").innerText=zoomFactor.toFixed(1)\'><svg class="plusminusSVG"height="17px"viewBox="0 0 20 20"width="17px"><path d="M9 11v7h3v-7h7V8h-7V1H9v7H2v3z"></path></svg></button><button class="button"onclick=\'zoomFactor=1,document.body.style.zoom=zoomFactor,document.getElementById("zoomDisplay").innerText=zoomFactor.toFixed(1)\'>Reset</button>';
+	div3.innerHTML = `<span>Zoom:</span><button class="plusminus" onclick='zoomFactor-=.1,document.body.style.zoom=zoomFactor,document.getElementById("zoomDisplay").innerText=zoomFactor.toFixed(1)'><svg class="plusminusSVG" height="17px" width="17px" viewBox="0 0 20 20"><path d="M2 9h16v3H2z"></path></svg></button><span id="zoomDisplay">1.0</span><button class="plusminus" onclick='zoomFactor+=.1,document.body.style.zoom=zoomFactor,document.getElementById("zoomDisplay").innerText=zoomFactor.toFixed(1)'><svg class="plusminusSVG" height="17px" width="17px" viewBox="0 0 20 20"><path d="M9 11v7h3v-7h7V8h-7V1H9v7H2v3z"></path></svg></button><button class="button" onclick='zoomFactor=1,document.body.style.zoom=zoomFactor,document.getElementById("zoomDisplay").innerText=zoomFactor.toFixed(1)'>Reset</button>`;
 	songAppEl.insertBefore(div3, div2.nextSibling); // Insert after first container
 }
 
