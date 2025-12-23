@@ -338,7 +338,7 @@ function processBlock(i){
 			chorusEven = -1;
 		}
 		if(chorusEven == 0){ // No chorus detected before
-			if(stanzaNumber == 2 && ){ // Even chorus because there are also chords on each stanza beforehand
+			if(stanzaNumber == 2){ // Even chorus
 				chorusEven = 1;
 			}else{ // Won't have even choruses
 				chorusEven = -1;
