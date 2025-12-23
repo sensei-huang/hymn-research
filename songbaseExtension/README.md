@@ -23,7 +23,7 @@ JS:
    - Minify it using https://minify-js.com/
    - Replace songBaseExtension.min.js
  - songBaseExtension.min.js
-   - Purge the cache from jsdelivr using https://www.jsdelivr.com/tools/purge
+   - Purge the cache from jsdelivr using https://www.jsdelivr.com/tools/purge and entering https://cdn.jsdelivr.net/gh/sensei-huang/hymn-research@main/songbaseExtension/songBaseExtension.min.js
  - bookmarklet.js
    - Minify it using https://minify-js.com/
    - Find and replace the string occuring after 'const js = `(() => {' in https://github.com/sensei-huang/sensei-huang.github.io/edit/main/songbase-extension.html
