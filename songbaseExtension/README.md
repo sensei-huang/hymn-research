@@ -1,4 +1,6 @@
 # Updating code instructions
+Note: Use online VS code (press .) to edit songBaseExtension.js and songBaseExtension.min.js
+
 HTML:
  - navbar.html
    - Minify using https://codebeautify.org/html-compressor
@@ -21,3 +23,5 @@ JS:
    - Minify it using https://minify-js.com/
    - Configure settings to top-level on and EMCA 5
    - Replace songBaseExtension.min.js
+ - songBaseExtension.min.js
+   - Purge the cache from jsdelivr using https://www.jsdelivr.com/tools/purge
