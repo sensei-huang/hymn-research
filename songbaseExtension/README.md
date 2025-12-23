@@ -21,7 +21,9 @@ JS:
    - Find and replace the string occuring after 'js.innerHTML = '
  - songBaseExtension.js
    - Minify it using https://minify-js.com/
-   - Configure settings to top-level on and EMCA 5
    - Replace songBaseExtension.min.js
  - songBaseExtension.min.js
    - Purge the cache from jsdelivr using https://www.jsdelivr.com/tools/purge
+ - bookmarklet.js
+   - Minify it using https://minify-js.com/
+   - Find and replace the string occuring after 'const js = `(() => {' in https://github.com/sensei-huang/sensei-huang.github.io/edit/main/songbase-extension.html
