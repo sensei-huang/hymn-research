@@ -2,7 +2,7 @@
 let wakeLock = null;
 
 // Auto-scroll variables
-let scrollPosition, scrollDecimal, scrollID, autoScrollOn = 0;
+let scrollWhole, scrollDecimal, scrollID, autoScrollOn = 0;
 let scrollSpeed = 0.1;
 
 // Zoom variable
@@ -113,9 +113,9 @@ function addButtons(){
 	button2.onclick = function(){
 		if(autoScrollOn == 0){
 			autoScrollOn = 1;
-			scrollPosition = window.scrollY;
+			scrollWhole = 0;
 			scrollDecimal = 0;
-			scrollID = requestAnimationFrame(autoScroll);
+			scrollID = setTimeout(autoScroll, 1/120); // 120 Hz should be better than most displays and by using this fixed number, we can create
 			addAutoScrollSpeed();
 		}else{
 			removeAutoScrollSpeed();
@@ -135,10 +135,10 @@ function addButtons(){
 
 // Auto scroll function
 function autoScroll() {
-	scrollPosition = window.scrollY+scrollSpeed+scrollDecimal;
-	scrollDecimal = scrollPosition-Math.round(scrollPosition); // Get the remaining decimal
-	scrollPosition = Math.round(scrollPosition); // Round the position
-	window.scrollTo(window.scrollX, scrollPosition);
+	scrollWhole = scrollDecimal+scrollSpeed;
+	scrollDecimal = scrollWhole-Math.round(scrollWhole); // Get the remaining decimal
+	scrollWhole = Math.round(scrollWhole); // Round the position
+	window.scrollBy(0, scrollWhole);
 	 // Assumes the reference share button exists
 	if(document.getElementById("share-song").getBoundingClientRect().bottom > window.innerHeight-5){ // Not past the share button
 		scrollID = requestAnimationFrame(autoScroll);
@@ -294,7 +294,7 @@ function placeChords(i, arr){
 		i = tempi;
 		lines.splice(i, 0, chordComments);
 		lines.splice(i, 0, "#Unused chords:");
-		i++;
+		i+=2;
 	}
 	return i;
 }
