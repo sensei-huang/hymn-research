@@ -342,9 +342,11 @@ function processBlock(i){
 				chorusEven = -1;
 			}
 		}
-	}else if(/^([0-9]+)$/.test(lines[i])){ // Stanza number
+	}else if(/^([0-9]+)$/.test(lines[i]) || /(.|\s)*\S/.test(lines[i])){ // Stanza number or non-empty line
 		stanzaNumber++;
-		i++; // Skip stanza number
+		if(/^([0-9]+)$/.test(lines[i])){ // Only if it's a stanza number
+			i++; // Skip stanza number
+		}
 		if(lines[i].includes("[")){ // Has chords (assumes first line with chords means entire block with chords)
 			let result = extractChords(i);
 			i = result[0];
