@@ -342,7 +342,7 @@ function processBlock(i){
 				chorusEven = -1;
 			}
 		}
-	}else if(/^([0-9]+)$/.test(lines[i]) || /(.|\s)*\S/.test(lines[i])){ // Stanza number or non-empty line
+	}else if(/^([0-9]+)$/.test(lines[i]) || (/(\s)*\S/.test(lines[i]) && !(/^#.*/.test(lines[i])))){ // Stanza number or non-empty line
 		stanzaNumber++;
 		if(/^([0-9]+)$/.test(lines[i])){ // Only if it's a stanza number
 			i++; // Skip stanza number
