@@ -1,5 +1,5 @@
 let para = document.getElementsByClassName("body")[0].children[0].children;
-let latexArr = ["\\documentclass[10pt]{article}\n\\usepackage[a4paper, margin=1cm]{geometry}\n\\usepackage{relsize}\n\\usepackage{fp}\n\\usepackage{adjustbox}\n\n\\begin{document}\n\\begin{center}"];
+let latexArr = ["\\documentclass[10pt]{article}\n\\usepackage[a4paper, margin=1cm]{geometry}\n\\usepackage{relsize}\n\\usepackage{fp}\n\\usepackage{adjustbox}\n\n\\begin{document}\n\\centering\n"];
 let scaleFactor = "0.65";
 let portions = 3;
 let wordTotal = 0;
@@ -35,7 +35,7 @@ for(let i = 0; i < para.length; i++){
         }
     }
 }
-latexArr.push("\\end{center}\n\\end{document}");
+latexArr.push("\\end{document}");
 
 // Copy text to clipboard
 const storage = document.createElement('div');
