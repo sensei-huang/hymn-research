@@ -128,7 +128,7 @@ async function compile(masterLatex, i){
 		   	 }
 			}
 			latexArr.push("\\end{document}");
-			return latexArr.join("");
+			return latexArr.join("").replace(/[^\x00-\x7F]/g, "_");
 		});
 
 		compile(masterLatex, i).then(async (result) => {
