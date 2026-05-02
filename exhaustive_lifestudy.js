@@ -138,7 +138,7 @@ async function compile(masterLatex, i){
 		}
 		const mergedPdfBytes = await mergedPdf.save();
 	  fs.writeFileSync(books[b]+'.pdf', mergedPdfBytes);
-	 	console.log(`Merged PDF saved to: ${book+'.pdf'}`);
+	 	console.log(`Merged PDF saved to: ${books[b]+'.pdf'}`);
 	}	
 	process.exit();
 })();
