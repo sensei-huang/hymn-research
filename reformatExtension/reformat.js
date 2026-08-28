@@ -66,8 +66,8 @@ for(let i = 0; i < lines.length; i++){
           }
           let widthNeeded = calcWidth(string, false)-calcWidth(chords.innerText, true); // Width of lyrics minus width of chords lines
           let spaceNeeded = Math.round(widthNeeded/calcWidth(" ", true)); // Calculate spaces needed based on space width
-          if(spaceNeeded < 0){
-            spaceNeeded = 0;
+          if(spaceNeeded < 1){
+            spaceNeeded = 1;
           }
           chords.innerText += " ".repeat(spaceNeeded)+chordstring;
         }else{
